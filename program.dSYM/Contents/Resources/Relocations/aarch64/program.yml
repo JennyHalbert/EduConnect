@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/ThomasSpencer/Documents/GitHub/EduConnect/program'
+relocations:     []
+...

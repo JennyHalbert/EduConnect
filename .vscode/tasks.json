@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "C/C++: clang++ build all cpp files",
+      "type": "shell",
+      "command": "clang++",
+      "args": [
+    "-std=c++14",
+    "-g",
+    "${workspaceFolder}/*.cpp",
+    "-o",
+    "${workspaceFolder}/program"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    }
+  ]
+}
