@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include "User.h"
-#include "Request.h"
 
 class Tutor : public User{//this class is incomplete it is missing logic for the tutor constructor
     private:
@@ -16,5 +15,15 @@ class Tutor : public User{//this class is incomplete it is missing logic for the
         tutor();
         double avg_rating();
         int avg_completion();
+<<<<<<< Updated upstream
         int get_completed(); 
 };
+=======
+        int get_completed() const;
+        void update_ratings(double rating);
+        void update_completed();
+        void update_matched();
+        void setSubjects(const std::vector<std::string>& newSubjects);
+
+};
+>>>>>>> Stashed changes
