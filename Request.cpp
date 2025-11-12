@@ -3,7 +3,7 @@
 #include "Tutor.h"
 #include "Student.h"
    
-    Request::Request(Tutor t, Student s,std::string subject, char status, char urgency, char description[300]){
+    Request::Request(Tutor t, Student s,std::string subject, char status, char urgency){
         this-> tutor = t;
         this-> student =s;
         this-> subject = subject;

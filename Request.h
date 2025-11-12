@@ -22,7 +22,7 @@ class Request{
 
     public:
     Request();
-    Request(Tutor t, Student s,std::string subject, char status, char urgency, char description[300]);
+    Request(Tutor t, Student s,std::string subject, char status, char urgency);
     Tutor get_tutor();
     Student get_student();
     char get_status();

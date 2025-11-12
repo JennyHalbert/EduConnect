@@ -49,10 +49,10 @@ int main()
     Student s2("student2@email.com","studentname2","studentpass2");
     Student s3("student3@email.com","studentname3","studentpass3");
 
-    
-    Request r1(t1, s1, "Math", 'M', 'H', "Need help with calculus.");
-    Request r2(t2, s2, "English", 'E', 'L', "Need help with writting and essay.");
-    Request r3(t3, s3, "Math", 'M', 'M', "Need help with linear algebra.");
+    //removed description
+    Request r1(t1, s1, "Math", 'M', 'H');
+    Request r2(t2, s2, "English", 'E', 'L');
+    Request r3(t3, s3, "Math", 'M', 'M');
 
 
 // return tutor object
