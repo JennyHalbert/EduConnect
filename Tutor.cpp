@@ -3,10 +3,8 @@
 #include "User.h"
 #include "Tutor.h"
 
-<<<<<<< Updated upstream
     tutor::tutor(){
         
-=======
 
 // Tutor::Tutor(std::string email, std::string name, std::string password, std::vector<std::string> subjects)
 // : User(email, name, password), subjects(subjects){ // can use std::move in this line to increase efficiency
@@ -23,24 +21,32 @@ Tutor::Tutor(std::string email, std::string name, std::string password)
     // added
     void Tutor::setSubjects(const std::vector<std::string>& newSubjects){
         this -> subjects = newSubjects;
->>>>>>> Stashed changes
+
     }
 
     double Tutor::avg_rating(){
-        return total_rating/total_completed;
+        if(total_completed==0){
+            return 0.0;
+        }
+        else{
+        return total_ratings/total_completed;
+        }
     }
 
     int Tutor::avg_completion(){
+        if(total_matched==0){
+            return 0;
+        }
+        else{
         return total_completed/total_matched;
+        }
     }
 
-<<<<<<< Updated upstream
     int Tutor::get_completed(){
         return total_completed;
-=======
-int Tutor::get_completed() const{
-    return total_completed;
-}
+
+
+    }
     void Tutor::update_ratings(double rating){
         total_ratings+=rating;
     }
@@ -49,5 +55,4 @@ int Tutor::get_completed() const{
     }
     void Tutor::update_matched(){
         total_matched++;
->>>>>>> Stashed changes
     }

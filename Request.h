@@ -3,10 +3,10 @@
 #include "Student.h"
 #include "Tutor.h"
 
-<<<<<<< Updated upstream
 class Request{
     private:
-=======
+
+
 enum class RequestStatus {
     PENDING,
     MATCHED,
@@ -14,9 +14,9 @@ enum class RequestStatus {
     CANCELLED
 };
 
-class Request {
-protected:
->>>>>>> Stashed changes
+class Request{
+    protected:
+
     Student student;
     Tutor tutor;
     std::string subject;
@@ -25,20 +25,19 @@ protected:
     char status;
     bool is_accepted;
 
-<<<<<<< Updated upstream
 
 };
-=======
-public:
+
+    public:
     Request();
-    Request(Tutor tutor, Student student, std::string subject, char status, char urgency, std::string description = "");
-    const Tutor& get_tutor() const;
-    const Student& get_student() const;
-    char get_status() const;
-    char get_urgency() const;
-    bool get_is_accepted() const;
-    const std::string& get_description() const;
+    Request(Tutor t, Student s,std::string subject, char status, char urgency);
+    Tutor get_tutor();
+    Student get_student();
+    char get_status();
+    char get_urgency();
+    bool get_is_accepted();
+    char get_description(); // update to char[]
     void update_status(char updated_status);
     void update_is_accepted(bool accept);
 };
->>>>>>> Stashed changes
+
