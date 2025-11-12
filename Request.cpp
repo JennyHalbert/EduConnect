@@ -3,6 +3,16 @@
 #include "Tutor.h"
 #include "Student.h"
    
+    Request::Request()
+    : student(),
+      tutor(),
+      subject(""),
+      urgency('U'),
+      status('P'),
+      is_accepted(false) {
+        description[0] = '\0';
+    }
+
     Request::Request(Tutor t, Student s,std::string subject, char status, char urgency){
         this-> tutor = t;
         this-> student =s;
@@ -27,9 +37,9 @@
     bool Request::get_is_accepted(){
         return is_accepted;
     }
-    // char Request::get_description(){ // update to char[]
-    //     return description;
-    // }
+    char Request::get_description(){ // update to char[]
+        return description[0];
+    }
     void Request::update_status(char updated_status){
         status = updated_status;
     }

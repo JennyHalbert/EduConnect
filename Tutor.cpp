@@ -7,13 +7,13 @@
 // : User(email, name, password), subjects(subjects){ // can use std::move in this line to increase efficiency
 
 // }
-    Tutor::Tutor(std::string email,std::string name,std::string password){
-        this->email = email;
-        this->name = name;
-        this->password = password;
-        this->total_ratings = 0;
-        this->total_completed = 0;
-        this->total_matched = 0;
+    Tutor::Tutor() = default;
+
+    Tutor::Tutor(std::string email,std::string name,std::string password)
+    : User(email, name, password),
+      total_ratings(0.0),
+      total_completed(0),
+      total_matched(0) {
     }
 
     // added

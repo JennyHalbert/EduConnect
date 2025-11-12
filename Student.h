@@ -1,13 +1,14 @@
 #pragma once
 #include "User.h"
-#include "Request.h"
 #include <string>
+#include <vector>
 
+class Request;
 
 class Student: public User{
 
 private:
-    Request previous_requests[10];
+    std::vector<Request*> previous_requests;
 
 public:
     Student();

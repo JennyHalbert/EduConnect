@@ -3,6 +3,8 @@
 
 //std::unordered_map<std::string, User*> userDatabase;
 
+    User::User() = default;
+
     User::User(std::string email,std::string name,std::string password){
         this->email = email;
         this->name = name;
