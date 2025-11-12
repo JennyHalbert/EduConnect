@@ -2,6 +2,11 @@
 #include "User.h"
 #include "Tutor.h"
 
+
+// Tutor::Tutor(std::string email, std::string name, std::string password, std::vector<std::string> subjects)
+// : User(email, name, password), subjects(subjects){ // can use std::move in this line to increase efficiency
+
+// }
     Tutor::Tutor(std::string email,std::string name,std::string password){
         this->email = email;
         this->name = name;
@@ -9,6 +14,11 @@
         this->total_ratings = 0;
         this->total_completed = 0;
         this->total_matched = 0;
+    }
+
+    // added
+    void Tutor::setSubjects(const std::vector<std::string>& newSubjects){
+        this -> subjects = newSubjects;
     }
 
     double Tutor::avg_rating(){
@@ -29,7 +39,7 @@
         }
     }
 
-    int Tutor::get_completed(){
+    int Tutor::get_completed() const{
         return total_completed;
     }
     void Tutor::update_ratings(double rating){
