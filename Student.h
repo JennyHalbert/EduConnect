@@ -1,12 +1,15 @@
 #pragma once
 #include "User.h"
 #include "Request.h"
+#include <string>
 
-class Student: public User{//this class is incomplete, it is missing logic for the student constructor
+
+class Student: public User{
 
 private:
-    request previous_requests[10];
+    Request previous_requests[10];
 
 public:
-    student();
+    Student();
+    Student(std::string email,std::string name,std::string password);
 };
