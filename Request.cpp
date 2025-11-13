@@ -3,34 +3,38 @@
 #include "Tutor.h"
 #include "Student.h"
    
-    Request::Request(Tutor t, Student s,std::string subject, char status, char urgency){
-        this-> tutor = t;
-        this-> student =s;
+    Request::Request() = default;
+
+    Request::Request(Tutor t, Student s,std::string subject, RequestStatus status, UrgencyLevel urgency){
+        tutor = t;
+        student = s;
         this-> subject = subject;
         this-> status = status;
         this-> urgency = urgency;
-        // this-> description = description;
         is_accepted = false;
     }
-    Tutor Request::get_tutor(){
-        return tutor;
+    Tutor Request::get_tutor() const{
+        return tutor; 
     }
-    Student Request::get_student(){
+    Student Request::get_student() const{
         return student;
     }
-    char Request::get_status(){
+    RequestStatus Request::get_status() const{
         return status;
     }
-    char Request::get_urgency(){
+    UrgencyLevel Request::get_urgency() const{
         return urgency;
     }
-    bool Request::get_is_accepted(){
+    std::string Request::get_subject() const{
+        return subject;
+    }
+    bool Request::get_is_accepted() const{
         return is_accepted;
     }
-    // char Request::get_description(){ // update to char[]
-    //     return description;
-    // }
-    void Request::update_status(char updated_status){
+    char Request::get_description() const{ // update to char[]
+        return description[0];
+    }
+    void Request::update_status(RequestStatus updated_status){
         status = updated_status;
     }
     void Request::update_is_accepted(bool accept){

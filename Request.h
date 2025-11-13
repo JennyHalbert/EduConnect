@@ -1,14 +1,19 @@
 #pragma once
+#include <string>
 #include "Student.h"
 #include "Tutor.h"
 
 
-enum class RequestStatus {
+enum RequestStatus {
     PENDING,
     MATCHED,
     COMPLETED,
     CANCELLED
 };
+enum UrgencyLevel { 
+    LOW = 0, 
+    MEDIUM = 1, 
+    HIGH = 2 };
 
 class Request{
     protected:
@@ -16,19 +21,21 @@ class Request{
     Tutor tutor;
     std::string subject;
     char description[300];
-    char urgency;
-    char status;
+    UrgencyLevel urgency;
+    RequestStatus status;
     bool is_accepted;
+
 
     public:
     Request();
-    Request(Tutor t, Student s,std::string subject, char status, char urgency);
-    Tutor get_tutor();
-    Student get_student();
-    char get_status();
-    char get_urgency();
-    bool get_is_accepted();
-    char get_description(); // update to char[]
-    void update_status(char updated_status);
+    Request(Tutor t, Student s,std::string subject, RequestStatus status, UrgencyLevel urgency);
+    Tutor get_tutor() const;
+    Student get_student() const;
+    RequestStatus get_status() const;
+    UrgencyLevel get_urgency() const;
+    std::string get_subject() const;
+    bool get_is_accepted() const;
+    char get_description() const; // update to char[]
+    void update_status(RequestStatus updated_status);
     void update_is_accepted(bool accept);
 };
