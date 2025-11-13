@@ -29,9 +29,9 @@ int main(){
 
     Request* r1 = new Request(t1, s1, "Math", PENDING, HIGH);
     Request* r2 = new Request(t2, s2, "English", PENDING, LOW);
-    Request* r3 = new Request(t3, s3, "Math", PENDING, MEDIUM);
+    Request* r3 = new Request(t3, s3, "Math", PENDING, LOW);
 
-    // Create a priority queue of integers
+ // Create a priority queue of request pointers, define how the priority queue stores data, and define how the priority queue pointers will be compared
 priority_queue<Request*,vector<Request*>,CompareRequestUrgency> pending_request;
     // Add some elements to the priority queue
     cout << "Students submitting requests\n";
@@ -39,8 +39,6 @@ priority_queue<Request*,vector<Request*>,CompareRequestUrgency> pending_request;
     pending_request.push(r2);
     pending_request.push(r3);
 
-
- 
      cout << "Total pending requests: " << pending_request.size() << "\n\n";
 
     // Display and remove elements from the priority queue
@@ -49,14 +47,14 @@ priority_queue<Request*,vector<Request*>,CompareRequestUrgency> pending_request;
         // Get the highest-priority item
         Request* topRequest = pending_request.top();
 
-        // Process it...
-        std::cout << "  Processing: [" << topRequest->get_urgency() << "] " 
+  
+        cout << "  Processing: [" << topRequest->get_urgency() << "] " 
                   << topRequest->get_subject() << "\n";
 
         // Remove it from the queue
         pending_request.pop();
         
-        delete topRequest; // Free the allocated memory
+        delete topRequest; 
     }
     cout << endl;
  
