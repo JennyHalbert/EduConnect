@@ -29,6 +29,7 @@ class Request{
     public:
     Request();
     Request(Tutor t, Student s,std::string subject, RequestStatus status, UrgencyLevel urgency);
+    //Request(Tutor t, Student s,std::string subject, char status, char urgency);
     Tutor get_tutor() const;
     Student get_student() const;
     RequestStatus get_status() const;
