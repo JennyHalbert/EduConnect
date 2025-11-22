@@ -9,3 +9,7 @@
         this->name = name;
         this->password = password;
     }
+
+    void Student:: addrequest(Request*& r1) {
+        previous_requests.push_back(r1);
+    }

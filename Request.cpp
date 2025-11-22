@@ -5,13 +5,16 @@
    
     Request::Request() = default;
 
-    Request::Request(Tutor t, Student s,std::string subject, RequestStatus status, UrgencyLevel urgency){
+    Request::Request(Tutor t, Student s,std::string subject, RequestStatus status, UrgencyLevel urgency,std::string description,const std::vector<bool>& days){
         tutor = t;
         student = s;
         this-> subject = subject;
         this-> status = status;
         this-> urgency = urgency;
         is_accepted = false;
+        this-> description = description;
+        this-> days = days;
+
     }
     Tutor Request::get_tutor() const{
          return tutor; 
@@ -31,8 +34,8 @@
     bool Request::get_is_accepted() const{
         return is_accepted;
     }
-    char Request::get_description() const{ // update to char[]
-        return description[0];
+    std::string Request::get_description() const{
+        return description;
     }
     void Request::update_status(RequestStatus updated_status){
         status = updated_status;

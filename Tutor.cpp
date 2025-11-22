@@ -1,6 +1,7 @@
 #include <string>
 #include "User.h"
 #include "Tutor.h"
+#include "Request.h"
 
 
 // Tutor::Tutor(std::string email, std::string name, std::string password, std::vector<std::string> subjects)
@@ -9,11 +10,12 @@
 // }
     Tutor::Tutor() = default;
 
-    Tutor::Tutor(std::string email,std::string name,std::string password)
+    Tutor::Tutor(std::string email,std::string name,std::string password,const std::vector<bool>& days)
     : User(email, name, password),
       total_ratings(0.0),
       total_completed(0),
-      total_matched(0) {
+      total_matched(0),
+      days(days) {
     }
 
     // added
@@ -50,4 +52,24 @@
     }
     void Tutor::update_matched(){
         total_matched++;
+    }
+    void Tutor::clean_inbox(){
+        while(!request_inbox.empty()){
+
+            Request* top_req = request_inbox.top();
+            if(top_req->get_status()!= Request::PENDING){
+                request_inbox.pop();
+            }
+            else{
+            break;
+            }
+        }
+    }
+    Request* Tutor::next_request(){
+        clean_inbox();
+        if(request_inbox.empty()){
+            return nullptr;
+        }
+        return request_inbox.top();
+
     }
