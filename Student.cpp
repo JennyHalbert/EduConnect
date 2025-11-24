@@ -1,6 +1,7 @@
 #include <string>
 #include "User.h"
 #include "Student.h"
+#include "Request.h"
 
     Student::Student() = default;
 
@@ -10,6 +11,6 @@
         this->password = password;
     }
 
-    void Student:: addrequest(Request*& r1) {
+    void Student:: add_request(Request*& r1) {
         previous_requests.push_back(r1);
     }

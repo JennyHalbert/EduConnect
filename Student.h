@@ -4,9 +4,9 @@
 #include <vector>
 
 class Request;
+class Tutor;
 
 class Student: public User{
-
 private:
     std::vector<Request*> previous_requests;
 
