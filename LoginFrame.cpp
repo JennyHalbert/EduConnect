@@ -547,6 +547,8 @@ void LoginFrame::create_request(wxCommandEvent& evt){
 }
 void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 
+	// dispay a list of possible tutors, submit call on send request 
+	//look at list of select tutor, and creates a request and send to each avaible tutor 
 	bool day = false;
 	std::vector<std::string> selected_days_strings;
 	for(wxCheckBox* cb : day_checkboxes){
@@ -579,7 +581,7 @@ void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 		wxMessageBox("No tutors found for that subject and schedule.", "No Matches");
 		return;
 	}
-	if (tutor_results_list == nullptr) {
+	if (tutor_resulcts_list == nullptr) {
     wxMessageBox("Crash Avoided: tutor_results_list is NULL. Check Constructor!");
     return;
 	}

@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-//#include "sqlite3.h" // The SQL Library
+#include "sqlite3.h" // The SQL Library
 #include "User.h"
 #include "Student.h"
 #include "Tutor.h"
@@ -43,6 +43,19 @@ private:
     std::unordered_map<std::string, Student*> Students; 
     std::unordered_map<std::string, std::vector<Tutor*>> tutors_by_subject;
     
+    // --- Database ---
+    sqlite3* db = nullptr;
+    
+    Student* loadStudentFromDB(const std::string& email);
+    Tutor*   loadTutorFromDB(const std::string& email);
+
+    bool openDB(const std::string& filename);
+    void closeDB();
+    bool initSchema();
+    bool executeSQL(const char* sql);
+
+
+
     // // --- Database ---
     //sqlite3* db;    
     // //Helper to run internal SQL commands
