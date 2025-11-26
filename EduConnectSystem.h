@@ -30,6 +30,9 @@ public:
     // Returns a sorted list of tutors for the GUI to display in a list box
     std::vector<Tutor*> get_tutors_for_subject(std::string subject, std::string sort_criteria,const std::vector<bool> days);
 
+    void send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency,
+        const std::string description, std::string subject, const std::vector<bool>& days);
+
     // Requests
     void sendRequest(Student* student, const std::vector<Tutor*>& selectedTutors, 
                      Request::UrgencyLevel urgency, std::string subject, const std::vector<bool>& days);

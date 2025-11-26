@@ -24,6 +24,8 @@ class Request{
     //Constructors
     Request();
     Request(Tutor* t, Student* s,std::string subject, RequestStatus status, UrgencyLevel urgency,std::string description,const std::vector<bool>& days);
+    Request(Student* s,std::string subject, UrgencyLevel urgency,std::string description,const std::vector<bool>& days);//new
+
     //Functions
     Tutor* get_tutor() const;
     Student* get_student() const;
@@ -34,6 +36,7 @@ class Request{
     std::string get_description() const;
     void update_status(RequestStatus updated_status);
     void update_is_accepted(bool accept);
+    bool match_tutor(Tutor* t); //new
 
 
 };

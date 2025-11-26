@@ -14,8 +14,20 @@
         this-> days = days;
 
     }
+    //secondary constructor without defined tutor
+    Request::Request(Student* s,std::string subject, UrgencyLevel urgency,std::string description,const std::vector<bool>& days){
+        tutor = nullptr;    //null tutor
+        student = s;
+        this-> subject = subject;
+        this-> status = POSTED;
+        this-> urgency = urgency;
+        is_accepted = false;
+        this-> description = description;
+        this-> days = days;
+    }
+
     Tutor* Request::get_tutor() const{
-         return tutor; 
+        return tutor; 
     }
     Student* Request::get_student() const{
         return student;
@@ -40,4 +52,12 @@
     }
     void Request::update_is_accepted(bool accept){
         is_accepted = accept;
+    }
+    bool Request::match_tutor(Tutor* t){
+        if(t != nullptr){
+            tutor=t;
+            return true;
+        }
+        else
+            return false;
     }

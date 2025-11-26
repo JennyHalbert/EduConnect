@@ -61,9 +61,8 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
         Tutors[email] = new_Tutor;
         index_tutor(new_Tutor,subjects);
         return true;
-
-
     }
+
     bool EduConnectSystem::register_student(std::string name,std::string email,std::string password){
         if(Students.count(email)){
          return false;
@@ -75,8 +74,11 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
     }
     //Login Functions
     bool EduConnectSystem::tutor_login(std::string email,std::string password){
-            Tutor* temp_login = Tutors[email];
-            if(temp_login->get_password()==password){
+            Tutor* temp_login = get_tutor(email);
+            if (temp_login ==nullptr){
+                return false;
+            }
+            else if(temp_login->get_password()==password){
                 return true;
             }
             else{
@@ -84,8 +86,11 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
             }
     }
     bool EduConnectSystem::student_login(std::string email,std::string password){
-            Student* temp_login = Students[email];
-            if(temp_login->get_password()==password){
+            Student* temp_login = get_student(email);
+            if (temp_login ==nullptr){
+                return false;
+            }
+            else if(temp_login->get_password()==password){
                 return true;
             }
             else{
@@ -94,10 +99,20 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
     }
     //Get information functions
     Tutor* EduConnectSystem::get_tutor(std::string email){
-            return Tutors[email];
+            auto it = Tutors.find(email);
+
+            if(it != Tutors.end()){
+                return it->second;
+            }
+            return nullptr;
     }
     Student* EduConnectSystem::get_student(std::string email){
-            return Students[email];
+            
+            auto it = Students.find(email);
+            if(it != Students.end()){
+                return it->second;
+            }
+            return nullptr;
     }
 
 
@@ -140,4 +155,14 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
             return a->get_name() >= b->get_name();
         });
         return results;
+}
+
+void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency, 
+                                     std::string subject,const std::string description, const std::vector<bool>& days){
+
+        Request* new_request = new Request(s,subject,urgency,description,days);
+        for(Tutor* target : selected_tutors){
+            target->receive_request(new_request);
+        }
+        s->add_request(new_request);
 }
