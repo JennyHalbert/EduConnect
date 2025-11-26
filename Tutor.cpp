@@ -19,7 +19,10 @@
     }
     // added
     void Tutor::set_subjects(const std::vector<std::string>& newSubjects){
-        this -> subjects = newSubjects;
+        subjects = newSubjects;
+    }
+    void Tutor::set_days(const std::vector<bool>& days){
+        this->days = days;
     }
 
     double Tutor::avg_rating(){
@@ -43,13 +46,23 @@
     std::vector<std::string> Tutor::get_subjects(){
         return subjects;
     }
-
+    const std::vector<Request*>& Tutor::get_active_requests(){
+        return active_requests;
+    }
     int Tutor::get_completed() const{
         return total_completed;
     }
+    int Tutor::get_matched() const{
+        return total_matched;
+    }
+    std::vector<bool> Tutor::get_days(){
+        return days;
+    }
+
+
     void Tutor::update_ratings(double rating){
         total_ratings+=rating;
-        total_completed;
+        total_completed++;
     }
     void Tutor::update_matched(){
         total_matched++;

@@ -14,6 +14,10 @@ public:
     std::string get_password() const;
     std::string get_email() const;
     std::string get_name() const;
+
+    void set_email(std::string new_email);
+    void set_name(std::string new_name);
+    void set_password(std::string new_password);
 };
 
 // //Stores student/tutor objects

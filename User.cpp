@@ -19,6 +19,17 @@
     std::string User::get_name() const{
         return name;
     }
+
+    void User::set_email(std::string new_email){
+        email=new_email;
+    }
+    void User::set_name(std::string new_name){
+        name=new_name;
+    }
+    void User::set_password(std::string new_password){
+        password=new_password;
+    }
+
     
 //     //User registration
 //     //count asks how many entries with that email exist
