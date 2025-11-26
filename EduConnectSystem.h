@@ -17,6 +17,9 @@ public:
     // --- GUI calls these functions ---    
     // User Management
     void update_tutor_subjects(Tutor* tutor, const std::vector<std::string>& new_subjects);
+    bool update_student_details(std::string currentEmail, std::string newName, std::string newEmail, std::string newPassword);
+    bool update_tutor_details(std::string current_email,std::string new_name,std::string new_email,std::string new_pass,
+                              std::vector<std::string> new_subjects,std::vector<bool> new_days);
     //Register
     bool register_tutor(std::string name, std::string email,std::string password,const std::vector<bool>& days, std::vector<std::string> subjects);
     bool register_student(std::string name,std::string email,std::string password);
@@ -34,8 +37,6 @@ public:
         const std::string description, std::string subject, const std::vector<bool>& days);
 
     // Requests
-    void sendRequest(Student* student, const std::vector<Tutor*>& selectedTutors, 
-                     Request::UrgencyLevel urgency, std::string subject, const std::vector<bool>& days);
 
 private:
     // --- Data Structures ---

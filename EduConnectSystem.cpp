@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Algorithms.h" // Your Merge Sort template
 #include "Tutor.h"
+#include "Student.h"
 #include <vector>
 #include <string>
 
@@ -9,20 +10,17 @@ EduConnectSystem::EduConnectSystem() {
 
 }
 EduConnectSystem::~EduConnectSystem() {
-// 1. Clean up Tutors
     for (auto& pair : Tutors) {
-        delete pair.second; // Delete the heap pointer
+        delete pair.second;
     }
     Tutors.clear();
 
     // 2. Clean up Students
     for (auto& pair : Students) {
-        delete pair.second; // Delete the heap pointer
+        delete pair.second; 
     }
     Students.clear();
 
-    // 3. Clean up Index maps
-    // (We don't delete pointers here because we just did it above)
     tutors_by_subject.clear();
 }
 void EduConnectSystem::index_tutor(Tutor* t, const std::vector<std::string>& subjects){
@@ -50,6 +48,49 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
     for(const std::string& new_sub: new_subjects){
         tutors_by_subject[new_sub].push_back(tutor);
     }
+}
+
+bool EduConnectSystem::update_student_details(std::string current_email, std::string new_name, std::string new_email, std::string new_password){
+    auto it = Students.find(current_email);
+    if(it == Students.end()) 
+        return false;
+
+    Student* s = it->second;
+    //handle email changes
+    if(current_email != new_email){
+        if(Students.count(new_email)){//check if email is used
+            return false;
+        }        
+        Students.erase(current_email);//remove student from hashmap
+        s->set_email(new_email);//update email
+        Students[new_email]= s;//add back to hashmap
+    }
+        s->set_name(new_name);
+        s->set_password(new_password);
+        return true;
+}
+
+bool EduConnectSystem::update_tutor_details(std::string current_email,std::string new_name,std::string new_email,std::string new_pass,
+    std::vector<std::string> new_subjects,std::vector<bool> new_days){
+    auto it = Tutors.find(current_email);
+    if(it == Tutors.end()){
+        return false;
+    }  
+
+    Tutor* t = it->second;
+
+    if(current_email != new_email){
+        if(Tutors.count(new_email)){
+            return false;
+        }
+        Tutors.erase(current_email);
+        t->set_email(new_email);
+        Tutors[new_email] = t;
+    }
+        t->set_name(new_name);
+        t->set_password(new_pass);
+        t->set_subjects(new_subjects);
+        t->set_days(new_days);
 }
 
     //Register Functions
@@ -116,7 +157,7 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
     }
 
 
-    std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
+std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
         std::vector<Tutor*> results;
     
         const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
@@ -156,7 +197,6 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
         });
         return results;
 }
-
 void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency, 
                                      std::string subject,const std::string description, const std::vector<bool>& days){
 
