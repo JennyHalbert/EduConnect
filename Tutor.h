@@ -25,9 +25,10 @@ class Tutor: public User{
         int get_completed() const; 
         std::vector<std::string> get_subjects();
         void update_ratings(double rating);
-        void update_completed();
         void update_matched();
         void set_subjects(const std::vector<std::string>& newSubjects);
+        void receive_request(Request* r);
+        bool accept_request(Request* r);
         void clean_inbox();
         std::vector<Request*> get_valid_inbox();
         bool is_available(int dayIndex) const;

@@ -49,9 +49,7 @@
     }
     void Tutor::update_ratings(double rating){
         total_ratings+=rating;
-    }
-    void Tutor::update_completed(){
-        total_completed++;
+        total_completed;
     }
     void Tutor::update_matched(){
         total_matched++;
@@ -94,3 +92,21 @@
         }
         return false;
     }
+
+    void Tutor::receive_request(Request* r){
+        if(r==nullptr) return;
+        request_inbox.push(r);
+    }
+
+    bool Tutor::accept_request(Request* r){
+        if(r->get_status()!= Request::POSTED){
+            return false;
+        }
+        r->update_status(Request::MATCHED);
+        r->match_tutor(this);
+        active_requests.push_back(r);
+        total_matched++;
+        return true;
+    }
+
+
