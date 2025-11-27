@@ -1,7 +1,6 @@
 #include "EduConnectSystem.h"
 #include <iostream>
-#include "Algorithms.h"
-//#include "sqlite3.h"
+#include "Algorithms.h" // Your Merge Sort template
 #include "Tutor.h"
 #include "Student.h"
 #include <vector>
@@ -11,6 +10,7 @@ EduConnectSystem::EduConnectSystem() {
 
 }
 EduConnectSystem::~EduConnectSystem() {
+// 1. Clean up Tutors
     for (auto& pair : Tutors) {
         delete pair.second;
     }
@@ -23,7 +23,92 @@ EduConnectSystem::~EduConnectSystem() {
     Students.clear();
 
     tutors_by_subject.clear();
+
+    closeDB();
+    std::cout << "[EduConnectSystem] Destructor finished.\n";
 }
+
+
+// add db stuff in 
+// DB 
+// ---------- SQLite helpers ----------
+
+bool EduConnectSystem::openDB(const std::string& filename) {
+    // If it's already open, don't reopen
+    if (db) {
+        std::cout << "[DB] openDB: DB already open.\n";
+        return true;
+    }
+
+    std::cout << "[DB] Opening database: " << filename << "\n";
+
+    int rc = sqlite3_open(filename.c_str(), &db);
+    if (rc != SQLITE_OK) {
+        std::cerr << "[DB] ERROR opening database: " << sqlite3_errmsg(db) << "\n";
+        db = nullptr;
+        return false;
+    }
+
+    std::cout << "[DB] Opened successfully.\n";
+
+    // 🔹 ENSURE SCHEMA EXISTS *RIGHT HERE*
+    const char* schema = R"SQL(
+        CREATE TABLE IF NOT EXISTS students (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            name     TEXT NOT NULL,
+            email    TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS tutors (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            name     TEXT NOT NULL,
+            email    TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        );
+    )SQL";
+
+    std::cout << "[DB] Ensuring schema exists inside openDB()...\n";
+    if (!executeSQL(schema)) {
+        std::cerr << "[DB] ERROR creating schema inside openDB().\n";
+        // We still keep DB open so the program can run using in-memory structures.
+    } else {
+        std::cout << "[DB] Schema ready (students / tutors tables).\n";
+    }
+
+    return true;
+}
+
+void EduConnectSystem::closeDB() {
+    if (db) {
+        sqlite3_close(db);
+        db = nullptr;
+    }
+}
+
+bool EduConnectSystem::executeSQL(const char* sql) {
+    std::cout << "[DB] Executing SQL:\n" << sql << "\n";
+
+    char* errMsg = nullptr;
+    int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
+
+    if (rc != SQLITE_OK) {
+        std::cerr << "[DB] SQL ERROR: " << (errMsg ? errMsg : "unknown") << std::endl;
+        sqlite3_free(errMsg);
+        return false;
+    }
+
+    std::cout << "[DB] SQL executed successfully.\n";
+    return true;
+}
+
+
+bool EduConnectSystem::initSchema() {
+    std::cout << "[DB] initSchema() called; delegating to openDB.\n";
+    return openDB("educonnect.db");
+}
+
+// add db stuff in
 void EduConnectSystem::index_tutor(Tutor* t, const std::vector<std::string>& subjects){
     for(const std::string& sub:subjects){
         tutors_by_subject[sub].push_back(t);
@@ -100,20 +185,86 @@ bool EduConnectSystem::update_tutor_details(std::string current_email,std::strin
          return false;
         }
         Tutor* new_Tutor = new Tutor(email, name, password, days, subjects);
-        Tutors[email] = new_Tutor;
+    Tutors[email] = new_Tutor;
         index_tutor(new_Tutor,subjects);
         return true;
     }
 
-    bool EduConnectSystem::register_student(std::string name,std::string email,std::string password){
-        if(Students.count(email)){
-         return false;
+
+    // added in 
+
+
+
+
+    // added in 
+    // bool EduConnectSystem::register_student(std::string name,std::string email,std::string password){
+    //     std::cout << "[register_student] called with email=" << email << "\n";
+    //     if(Students.count(email)){
+    //      return false;
+    //     }
+    //     Student* new_Student = nullptr;
+    //     new_Student = new Student(email, name, password);
+    //     Students[email] = new_Student;
+    //     return true;
+    // }
+
+    bool EduConnectSystem::register_student(std::string name,
+                                            std::string email,
+                                            std::string password)
+    {
+        std::cout << "[register_student] called with email=" << email << "\n";
+
+
+        if (Students.count(email)) {
+            std::cout << "[register_student] Student already exists in Students map. "
+                        "Skipping creation and DB insert.\n";
+            return false;
         }
+
         Student* new_Student = nullptr;
-        new_Student = new Student(email, name, password);
+        new_Student = new Student(name, email, password); 
+
         Students[email] = new_Student;
+        std::cout << "[register_student] In-memory Student object created and stored in map.\n";
+
+
+        if (!db && !openDB("educonnect.db")) {
+            std::cerr << "[register_student][DB] WARNING: Could not open DB. ";
+            return true;  
+        }
+
+        const char* sql =
+            "INSERT INTO students (name, email, password) VALUES (?, ?, ?);";
+
+        sqlite3_stmt* stmt = nullptr;
+        std::cout << "[register_student][DB] Preparing INSERT for " << email << "\n";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "[register_student][DB] ERROR preparing INSERT: "
+                    << sqlite3_errmsg(db) << "\n";
+            // don’t undo in-memory success
+            return true;
+        }
+
+        sqlite3_bind_text(stmt, 1, name.c_str(),  -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, email.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, password.c_str(), -1, SQLITE_TRANSIENT);
+
+        int rc = sqlite3_step(stmt);
+
+        if (rc == SQLITE_DONE) {
+            std::cout << "[register_student][DB] INSERT successful for " << email << "\n";
+        } else {
+            std::cerr << "[register_student][DB] ERROR during INSERT step: "
+                    << sqlite3_errmsg(db) << "\n";
+        }
+
+        sqlite3_finalize(stmt);
+
+        std::cout << "[register_student] Completed for " << email << "\n";
         return true;
     }
+
     //Login Functions
     bool EduConnectSystem::tutor_login(std::string email,std::string password){
             Tutor* temp_login = get_tutor(email);
@@ -208,3 +359,5 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
         }
         s->add_request(new_request);
 }
+
+

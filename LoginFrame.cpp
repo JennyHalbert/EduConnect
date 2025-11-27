@@ -906,6 +906,8 @@ void LoginFrame::populate_tutor_account_details(Tutor* t){
 //Student Request Help Functions
 void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 
+	// dispay a list of possible tutors, submit call on send request 
+	//look at list of select tutor, and creates a request and send to each avaible tutor 
 	bool day = false;
 	std::vector<std::string> selected_days_strings;
 	
