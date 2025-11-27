@@ -13,6 +13,7 @@ class Tutor: public User{
         std::vector<std::string> subjects;
         std::vector<bool> days;
         std::vector<Request*> active_requests;
+        std::vector<Request*> previous_requests;
         std::priority_queue<Request*,std::vector<Request*>,CompareRequestUrgency> request_inbox;
         // Create a priority queue of request pointers, define how the priority queue stores data, and define how the priority queue pointers will be compared
 
@@ -30,13 +31,15 @@ class Tutor: public User{
         int get_matched() const;
         std::vector<bool> get_days();
         std::vector<std::string> get_subjects();
-        const std::vector<Request*>& get_active_requests();
+        std::vector<Request*> get_active_requests();
+        std::vector<Request*> get_previous_requests();
 
         void update_ratings(double rating);
         void update_matched();
 
         void receive_request(Request* r);
         bool accept_request(Request* r);
+        void close_request(Request*r);
 
         void clean_inbox();
         std::vector<Request*> get_valid_inbox();

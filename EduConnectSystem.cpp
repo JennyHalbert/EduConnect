@@ -92,6 +92,7 @@ bool EduConnectSystem::update_tutor_details(std::string current_email,std::strin
         t->set_password(new_pass);
         t->set_subjects(new_subjects);
         t->set_days(new_days);
+        return true;
 }
 
     //Register Functions
