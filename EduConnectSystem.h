@@ -37,6 +37,8 @@ public:
     void send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency,
         const std::string description, std::string subject, const std::vector<bool>& days);
 
+    bool accept_request(Tutor* t, Request* r);
+
     // Requests
 
 private:

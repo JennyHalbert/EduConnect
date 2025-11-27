@@ -894,10 +894,9 @@ void LoginFrame::populate_tutor_account_details(Tutor* t){
 		tutor_update_subjects->SetStringSelection(s);
 	}
 	std::vector<bool> days = t->get_days();
-	for(bool d:days){
-		int index = 0;
-		if(d){
-			tutor_update_days->SetSelection(index);
+	for(size_t i = 0; i < days.size(); ++i){
+		if(days[i]){
+			tutor_update_days->SetSelection(i);
 		}
 	}
 
@@ -1115,6 +1114,7 @@ void LoginFrame::refresh_tutor_ui(){
 		std::vector<bool> req_days = r->get_days();
 		std::string days = "";
 		int commas = ((req_days.size())-1);
+		int index = 0;
 
 
         switch (r->get_urgency()) {
@@ -1124,7 +1124,6 @@ void LoginFrame::refresh_tutor_ui(){
             default:              urgency_str = "Unknown"; break;
         }
 		for(bool b : req_days){
-			int index = 0;
 			if(b){
 				switch(index){
 				case 0: days.append("Sun"); break;
@@ -1140,6 +1139,7 @@ void LoginFrame::refresh_tutor_ui(){
 					commas--;
 				}
 			}
+			++index;
 		}
 		tutor_inbox_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
 			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Posted" + " | Days: " +  days);
@@ -1153,6 +1153,7 @@ void LoginFrame::refresh_tutor_ui(){
 		std::vector<bool> req_days = r->get_days();
 		std::string days = "";
 		int commas = req_days.size()-1;
+		int index = 0;
 
         switch (r->get_urgency()) {
             case Request::HIGH:   urgency_str = "High";   break;
@@ -1161,7 +1162,6 @@ void LoginFrame::refresh_tutor_ui(){
             default:              urgency_str = "Unknown"; break;
         }
 		for(bool b : req_days){
-			int index = 0;
 			if(b){
 				switch(index){
 				case 0: days.append("Sun"); break;
@@ -1177,6 +1177,7 @@ void LoginFrame::refresh_tutor_ui(){
 					commas--;
 				}
 			}
+			++index;
 		}
 		tutor_active_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
 			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Matched" + " | Days: " +  days);
@@ -1193,7 +1194,7 @@ void LoginFrame::on_tutor_accept_request(wxCommandEvent& evt){
 	std::string email = tutor_username->GetValue().ToStdString();
 	Tutor*t = connection_system->get_tutor(email);
 
-	if(t->accept_request(req)){
+	if(connection_system->accept_request(t, req)){
 		wxMessageBox("Request Accepted!");
         refresh_tutor_ui(); // Move from Inbox to Active UI
 	}
@@ -1248,4 +1249,3 @@ void LoginFrame::on_request_double_click(wxCommandEvent& evt){
         wxMessageBox(content, title, wxOK | wxICON_INFORMATION);
 	}
 }
-
