@@ -51,6 +51,10 @@
         return days;
     }
 
+    int Request::get_request_ID() const{
+        return request_ID;
+    }
+
     void Request::update_status(RequestStatus updated_status){
         status = updated_status;
     }
@@ -65,3 +69,4 @@
         else
             return false;
     }
+

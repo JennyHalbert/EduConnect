@@ -19,6 +19,7 @@ class Request{
     RequestStatus status;
     bool is_accepted;
     std::vector<bool> days;
+    int request_ID;
 
     public:
     //Constructors
@@ -38,8 +39,7 @@ class Request{
     void update_status(RequestStatus updated_status);
     void update_is_accepted(bool accept);
     bool match_tutor(Tutor* t); //new
-
-
+    int get_request_ID() const;
 };
 
 struct CompareRequestUrgency {//define a structure to handle the logic for the priority queue comparisons

@@ -7,6 +7,7 @@
 #include "Student.h"
 #include "Tutor.h"
 #include "Request.h"
+#include "Database.h"
 
 class EduConnectSystem {
 public:
@@ -45,15 +46,15 @@ private:
     std::unordered_map<std::string, std::vector<Tutor*>> tutors_by_subject;
     
     // --- Database ---
-    sqlite3* db = nullptr;
+    Database db_{"educonnect.db"};
     
-    Student* loadStudentFromDB(const std::string& email);
-    Tutor*   loadTutorFromDB(const std::string& email);
+    // Student* loadStudentFromDB(const std::string& email);
+    // Tutor*   loadTutorFromDB(const std::string& email);
 
-    bool openDB(const std::string& filename);
-    void closeDB();
-    bool initSchema();
-    bool executeSQL(const char* sql);
+    // bool openDB(const std::string& filename);
+    // void closeDB();
+    // bool initSchema();
+    // bool executeSQL(const char* sql);
 
 
 
