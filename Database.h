@@ -25,19 +25,24 @@ public:
                   const std::string& email,
                   const std::string& password);
 
-    bool addRequest(const std::string& student_email,
-                    const std::string& tutor_email,
-                    const std::string& subject,
-                    int status,
-                    int urgency,
-                    const std::string& description,
-                    const std::vector<bool>& days,
-                    int is_accepted);
+    bool addRequest(int tutor_ID, int student_ID, const std::string& subject,
+                    int status, int urgency, const std::string& description,
+                    const std::string& days);
 
-    bool updateRequestStatus(const std::string& student_email,
-                             const std::string& tutor_email,
-                             int status,
-                             int is_accepted);
+    // bool addRequest(const std::string& student_email,
+    //                     const std::string& tutor_email,
+    //                     const std::string& subject,
+    //                     int status,
+    //                     int urgency,
+    //                     const std::string& description,
+    //                     const std::vector<bool>& days,
+    //                     int is_accepted);
+    
+    //     bool updateRequestStatus(const std::string& student_email,
+    //                              const std::string& tutor_email,
+    //                              int status,
+    //                              int is_accepted);
+
 
     bool loadAllStudents(std::unordered_map<std::string, Student*>& students);
     bool loadAllTutors(std::unordered_map<std::string, Tutor*>& tutors,

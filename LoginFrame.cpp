@@ -1080,15 +1080,16 @@ void LoginFrame::student_on_mark_complete(wxCommandEvent& evt){
 
 		RatingDialog dlg(this, req->get_tutor()->get_name());
 
-		if(dlg.ShowModal()== wxID_OK){
-			int rating = dlg.GetRating();
-			std::string email = student_username->GetValue().ToStdString();
-			Student* s =connection_system->get_student(email);
-			s->close_request(req,rating);
+	if(dlg.ShowModal()== wxID_OK){
+		int rating = dlg.GetRating();
+		std::string email = student_username->GetValue().ToStdString();
+		Student* s =connection_system->get_student(email);
+		s->close_request(req,rating);
+		connection_system->complete_request(req);
 
-			wxMessageBox("Session completed and rating submitted!");
+		wxMessageBox("Session completed and rating submitted!");
         	student_refresh_request_lists(); // Update UI
-		}
+	}
 
 }
 void LoginFrame::student_on_refresh_click(wxCommandEvent& evt){
@@ -1206,8 +1207,9 @@ void LoginFrame::on_tutor_close_request(wxCommandEvent& evt){
 	int selection = tutor_active_list->GetSelection();
 	if(selection == wxNOT_FOUND) return;
 	
-	Request* req = displayed_tutor_active[selection];
+Request* req = displayed_tutor_active[selection];
 	req-> update_status(Request::COMPLETED);
+	connection_system->complete_request(req);
 	//---------------------------------------------------------------------------------------------------------------------add history vector logic
 	wxMessageBox("Session Marked as Complete.");
     refresh_tutor_ui();

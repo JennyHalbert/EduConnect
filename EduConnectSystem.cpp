@@ -269,21 +269,30 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
         Request* new_request = new Request(s,subject,urgency,description,days);
         for(Tutor* target : selected_tutors){
             target->receive_request(new_request);
-            db_.addRequest(s->get_email(), target->get_email(), subject,
-                           Request::POSTED, static_cast<int>(urgency),
-                           description, days, /*is_accepted*/0);
+            // db_.addRequest(s->get_email(), target->get_email(), subject,
+            //                Request::POSTED, static_cast<int>(urgency),
+            //                description, days, /*is_accepted*/0);
         }
         s->add_request(new_request);
 }
 
-bool EduConnectSystem::accept_request(Tutor* t, Request* r){
-        if(!t || !r) return false;
-        if(!t->accept_request(r)) return false;
+// bool EduConnectSystem::accept_request(Tutor* t, Request* r){
+//         if(!t || !r) return false;
+//         if(!t->accept_request(r)) return false;
 
-        r->update_is_accepted(true);
-        db_.updateRequestStatus(r->get_student()->get_email(),
-                                t->get_email(),
-                                static_cast<int>(r->get_status()),
-                                1);
-        return true;
-}
+//         r->update_is_accepted(true);
+//         db_.updateRequestStatus(r->get_student()->get_email(),
+//                                 t->get_email(),
+//                                 static_cast<int>(r->get_status()),
+//                                 1);
+//         return true;
+// }
+
+// bool EduConnectSystem::complete_request(Request* r){
+//         if(!r || !r->get_student() || !r->get_tutor()) return false;
+//         db_.updateRequestStatus(r->get_student()->get_email(),
+//                                 r->get_tutor()->get_email(),
+//                                 static_cast<int>(r->get_status()),
+//                                 r->get_is_accepted() ? 1 : 0);
+//         return true;
+// }
