@@ -144,7 +144,7 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
          return false;
         }
         Tutor* new_Tutor = new Tutor(email, name, password, days, subjects);
-        Tutors[email] = new_Tutor;
+    Tutors[email] = new_Tutor;
         index_tutor(new_Tutor,subjects);
         return true;
     }
@@ -173,7 +173,7 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
     {
         std::cout << "[register_student] called with email=" << email << "\n";
 
-        // 🔹 ORIGINAL LOGIC – kept exactly the same
+
         if (Students.count(email)) {
             std::cout << "[register_student] Student already exists in Students map. "
                         "Skipping creation and DB insert.\n";
@@ -182,16 +182,13 @@ void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std
 
         Student* new_Student = nullptr;
         new_Student = new Student(name, email, password); 
-        // ^ if your ctor is (email, name, password) swap this back, but don't change logic style
 
         Students[email] = new_Student;
         std::cout << "[register_student] In-memory Student object created and stored in map.\n";
 
-        // 🔹 NEW: Try to also insert into the database (but do NOT change return value)
 
         if (!db && !openDB("educonnect.db")) {
-            std::cerr << "[register_student][DB] WARNING: Could not open DB. "
-                        "Student exists in memory only.\n";
+            std::cerr << "[register_student][DB] WARNING: Could not open DB. ";
             return true;  
         }
 

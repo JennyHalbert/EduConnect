@@ -581,7 +581,7 @@ void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 		wxMessageBox("No tutors found for that subject and schedule.", "No Matches");
 		return;
 	}
-	if (tutor_resulcts_list == nullptr) {
+	if (tutor_results_list == nullptr) {
     wxMessageBox("Crash Avoided: tutor_results_list is NULL. Check Constructor!");
     return;
 	}
