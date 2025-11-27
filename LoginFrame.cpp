@@ -905,6 +905,7 @@ void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 
 	bool day = false;
 	std::vector<std::string> selected_days_strings;
+	
 	for(wxCheckBox* cb : day_checkboxes){
 		if(cb->GetValue()){
 			day=true;
@@ -1100,16 +1101,69 @@ void LoginFrame::refresh_tutor_ui(){
 	Tutor* t = connection_system->get_tutor(email);
 	if(!t) return;
 
+	//Get request inbox to display
 	std::vector<Request*> inbox = t->get_valid_inbox();
 	for(Request* r : inbox){
-		tutor_inbox_list->Append(r->get_subject() + " | " +(r->get_urgency() == Request::HIGH ? "HIGH" : "Normal") + ")");//consult AI
+		std::string urgency_str;
+		std::vector<bool> req_days = r->get_days();
+		std::string days = "";
+
+        switch (r->get_urgency()) {
+            case Request::HIGH:   urgency_str = "High";   break;
+            case Request::MEDIUM: urgency_str = "Medium"; break;
+            case Request::LOW:    urgency_str = "Low";    break;
+            default:              urgency_str = "Unknown"; break;
+        }
+		for(bool b : req_days){
+			int index = 0;
+			if(b){
+				switch(index){
+				case 0: days.append("Sun, "); break;
+				case 1: days.append("Mon, "); break;
+				case 2: days.append("Tue, "); break;
+				case 3: days.append("Wed, "); break;
+				case 4: days.append("Thu, "); break;
+				case 5: days.append("Fri, "); break;
+				case 6: days.append("Sat"); break;			
+			}
+			}
+		}
+		tutor_inbox_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
+			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Posted" + " | Days: " +  days);
 		displayed_tutor_inbox.push_back(r);
 	}
-
+	//Get active requests to display
 	const std::vector<Request*>& active = t->get_active_requests();
+
 	for(Request* r: active){
-		tutor_active_list->Append(r->get_subject() + " - " + r->get_student()->get_name());
+		std::string urgency_str;
+		std::vector<bool> req_days = r->get_days();
+		std::string days = "";
+
+        switch (r->get_urgency()) {
+            case Request::HIGH:   urgency_str = "High";   break;
+            case Request::MEDIUM: urgency_str = "Medium"; break;
+            case Request::LOW:    urgency_str = "Low";    break;
+            default:              urgency_str = "Unknown"; break;
+        }
+		for(bool b : req_days){
+			int index = 0;
+			if(b){
+				switch(index){
+				case 0: days.append("Sun, "); break;
+				case 1: days.append("Mon, "); break;
+				case 2: days.append("Tue, "); break;
+				case 3: days.append("Wed, "); break;
+				case 4: days.append("Thu, "); break;
+				case 5: days.append("Fri, "); break;
+				case 6: days.append("Sat"); break;			
+			}
+			}
+		}
+		tutor_active_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
+			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Matched" + " | Days: " +  days);
 		displayed_tutor_active.push_back(r);
+
 	}
 }
 void LoginFrame::on_tutor_accept_request(wxCommandEvent& evt){

@@ -47,6 +47,10 @@
     std::string Request::get_description() const{
         return description;
     }
+    std::vector<bool> Request::get_days() const{
+        return days;
+    }
+
     void Request::update_status(RequestStatus updated_status){
         status = updated_status;
     }

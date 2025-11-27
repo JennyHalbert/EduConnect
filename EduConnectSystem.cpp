@@ -1,6 +1,7 @@
 #include "EduConnectSystem.h"
 #include <iostream>
-#include "Algorithms.h" // Your Merge Sort template
+#include "Algorithms.h"
+#include "sqlite3.h"
 #include "Tutor.h"
 #include "Student.h"
 #include <vector>
