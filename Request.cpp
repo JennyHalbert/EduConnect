@@ -38,7 +38,7 @@
     Request::UrgencyLevel Request::get_urgency() const{
         return urgency;
     }
-    std::string Request::get_subject() const{
+    std::string Request::get_subject(){
         return subject;
     }
     bool Request::get_is_accepted() const{
@@ -47,6 +47,10 @@
     std::string Request::get_description() const{
         return description;
     }
+    std::vector<bool> Request::get_days() const{
+        return days;
+    }
+
     void Request::update_status(RequestStatus updated_status){
         status = updated_status;
     }

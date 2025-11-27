@@ -1,6 +1,7 @@
 #include "EduConnectSystem.h"
 #include <iostream>
-#include "Algorithms.h" // Your Merge Sort template
+#include "Algorithms.h"
+//#include "sqlite3.h"
 #include "Tutor.h"
 #include "Student.h"
 #include <vector>
@@ -197,8 +198,9 @@ std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject
         });
         return results;
 }
+
 void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency, 
-                                     std::string subject,const std::string description, const std::vector<bool>& days){
+                                     const std::string description,const std::string subject, const std::vector<bool>& days){
 
         Request* new_request = new Request(s,subject,urgency,description,days);
         for(Tutor* target : selected_tutors){

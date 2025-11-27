@@ -31,9 +31,10 @@ class Request{
     Student* get_student() const;
     RequestStatus get_status() const;
     UrgencyLevel get_urgency() const;
-    std::string get_subject() const;
+    std::string get_subject();
     bool get_is_accepted() const;
     std::string get_description() const;
+    std::vector<bool>get_days()const;
     void update_status(RequestStatus updated_status);
     void update_is_accepted(bool accept);
     bool match_tutor(Tutor* t); //new

@@ -339,7 +339,7 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
     	// Button binding
     	student_mark_complete_btn->Bind(wxEVT_BUTTON, &LoginFrame::student_on_mark_complete, this);
     	student_request_refresh_btn->Bind(wxEVT_BUTTON, &LoginFrame::student_on_refresh_click, this);
-
+		student_active_requests_list->Bind(wxEVT_LISTBOX_DCLICK, &LoginFrame::on_request_double_click,this);
 
 		//Student Account Details
 		wxPanel* student_account_details_tab = new wxPanel(student_home_pages, wxID_ANY);
@@ -428,6 +428,9 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 
 			accept_request_btn->Bind(wxEVT_BUTTON, &LoginFrame::on_tutor_accept_request, this);
     		close_request_btn->Bind(wxEVT_BUTTON, &LoginFrame::on_tutor_close_request, this);
+			tutor_inbox_list->Bind(wxEVT_LISTBOX_DCLICK, &LoginFrame::on_request_double_click,this);
+			tutor_active_list->Bind(wxEVT_LISTBOX_DCLICK, &LoginFrame::on_request_double_click,this);
+
 			
 
 	//Tutor Account Page -----------------------------------------------------------------------------------
@@ -905,6 +908,7 @@ void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 
 	bool day = false;
 	std::vector<std::string> selected_days_strings;
+	
 	for(wxCheckBox* cb : day_checkboxes){
 		if(cb->GetValue()){
 			day=true;
@@ -1040,6 +1044,7 @@ void LoginFrame::student_refresh_request_lists(){
 	for(int i = start; i<count;i++){
 		Request* r = history[i];
 		std::string label = "Subject: " + r->get_subject()+" | Status: Completed | Tutor: " + r->get_tutor()->get_name();
+		student_history_requests_list->Append(label);
 	}
 	
 	if(!unrated_requests.empty()){
@@ -1100,16 +1105,80 @@ void LoginFrame::refresh_tutor_ui(){
 	Tutor* t = connection_system->get_tutor(email);
 	if(!t) return;
 
+	//Get request inbox to display
 	std::vector<Request*> inbox = t->get_valid_inbox();
 	for(Request* r : inbox){
-		tutor_inbox_list->Append(r->get_subject() + " | " +(r->get_urgency() == Request::HIGH ? "HIGH" : "Normal") + ")");//consult AI
+		std::string urgency_str;
+		std::vector<bool> req_days = r->get_days();
+		std::string days = "";
+		int commas = ((req_days.size())-1);
+
+
+        switch (r->get_urgency()) {
+            case Request::HIGH:   urgency_str = "High";   break;
+            case Request::MEDIUM: urgency_str = "Medium"; break;
+            case Request::LOW:    urgency_str = "Low";    break;
+            default:              urgency_str = "Unknown"; break;
+        }
+		for(bool b : req_days){
+			int index = 0;
+			if(b){
+				switch(index){
+				case 0: days.append("Sun"); break;
+				case 1: days.append("Mon"); break;
+				case 2: days.append("Tue"); break;
+				case 3: days.append("Wed"); break;
+				case 4: days.append("Thu"); break;
+				case 5: days.append("Fri"); break;
+				case 6: days.append("Sat"); break;			
+			}
+				if(commas>0){
+					days.append(", ");
+					commas--;
+				}
+			}
+		}
+		tutor_inbox_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
+			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Posted" + " | Days: " +  days);
 		displayed_tutor_inbox.push_back(r);
 	}
-
+	//Get active requests to display
 	const std::vector<Request*>& active = t->get_active_requests();
+
 	for(Request* r: active){
-		tutor_active_list->Append(r->get_subject() + " - " + r->get_student()->get_name());
+		std::string urgency_str;
+		std::vector<bool> req_days = r->get_days();
+		std::string days = "";
+		int commas = req_days.size()-1;
+
+        switch (r->get_urgency()) {
+            case Request::HIGH:   urgency_str = "High";   break;
+            case Request::MEDIUM: urgency_str = "Medium"; break;
+            case Request::LOW:    urgency_str = "Low";    break;
+            default:              urgency_str = "Unknown"; break;
+        }
+		for(bool b : req_days){
+			int index = 0;
+			if(b){
+				switch(index){
+				case 0: days.append("Sun"); break;
+				case 1: days.append("Mon"); break;
+				case 2: days.append("Tue"); break;
+				case 3: days.append("Wed"); break;
+				case 4: days.append("Thu"); break;
+				case 5: days.append("Fri"); break;
+				case 6: days.append("Sat"); break;						
+			}
+				if(commas>0){
+					days.append(", ");
+					commas--;
+				}
+			}
+		}
+		tutor_active_list->Append("Student Name: " + r->get_student()->get_name() + " | Subject:  " +
+			r->get_subject() + " | Urgency: " + urgency_str + " | Status: Matched" + " | Days: " +  days);
 		displayed_tutor_active.push_back(r);
+
 	}
 }
 void LoginFrame::on_tutor_accept_request(wxCommandEvent& evt){
@@ -1140,3 +1209,39 @@ void LoginFrame::on_tutor_close_request(wxCommandEvent& evt){
 	wxMessageBox("Session Marked as Complete.");
     refresh_tutor_ui();
 }
+void LoginFrame::on_request_double_click(wxCommandEvent& evt){
+	wxListBox* source = dynamic_cast<wxListBox*>(evt.GetEventObject());
+	if(!source) return;
+
+	int selection = source->GetSelection();
+	if(selection == wxNOT_FOUND) return;
+
+	Request* req = nullptr;
+
+	if (source == tutor_inbox_list) {
+        if (selection < displayed_tutor_inbox.size()) 
+            req = displayed_tutor_inbox[selection];
+    }
+    else if (source == tutor_active_list) {
+        if (selection < displayed_tutor_active.size()) 
+            req = displayed_tutor_active[selection];
+    }
+    else if (source == student_active_requests_list) {
+        if (selection < student_displayed_active_requests.size()) 
+            req = student_displayed_active_requests[selection];
+    }
+
+	if(req){
+		std::string title = "Request Details: " + req->get_subject();
+		std::string content = "";
+		content+= "Student: " + req->get_student()->get_name();
+		content+="\nUrgency: " + std::string(req->get_urgency() == Request::HIGH ? "High" : 
+                                            (req->get_urgency() == Request::MEDIUM ? "Medium" : "Low")) + "\n";
+		content += "-----------------------------------\n";
+        content += "Description:\n";
+        content += req->get_description(); // Assuming you added this getter!
+        // Display the message box
+        wxMessageBox(content, title, wxOK | wxICON_INFORMATION);
+	}
+}
+
