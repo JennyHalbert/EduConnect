@@ -38,7 +38,7 @@
     Request::UrgencyLevel Request::get_urgency() const{
         return urgency;
     }
-    std::string Request::get_subject() const{
+    std::string Request::get_subject(){
         return subject;
     }
     bool Request::get_is_accepted() const{

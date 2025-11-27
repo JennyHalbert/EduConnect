@@ -48,6 +48,7 @@ private:
 	void student_refresh_request_lists(); // Refills the listboxes
     void student_on_mark_complete(wxCommandEvent& evt);
     void student_on_refresh_click(wxCommandEvent& evt);
+	void on_request_double_click(wxCommandEvent& evt);
     
     //Student update account
     void on_student_update_account(wxCommandEvent& evt);
