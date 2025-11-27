@@ -30,6 +30,8 @@ EduConnectSystem::EduConnectSystem()
     // 2) Load persistent data into in-memory maps
     db_.loadAllStudents(Students);                        // fills Students[email]
     db_.loadAllTutors(Tutors, tutors_by_subject);         // fills Tutors[email] and index
+    db_.loadAllRequests(Students, Tutors); // fills requests and links to users
+    
 
     std::cout << "[EduConnectSystem] DB load complete. "
               << "Students: " << Students.size()
@@ -267,7 +269,21 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
         Request* new_request = new Request(s,subject,urgency,description,days);
         for(Tutor* target : selected_tutors){
             target->receive_request(new_request);
+            db_.addRequest(s->get_email(), target->get_email(), subject,
+                           Request::POSTED, static_cast<int>(urgency),
+                           description, days, /*is_accepted*/0);
         }
         s->add_request(new_request);
 }
 
+bool EduConnectSystem::accept_request(Tutor* t, Request* r){
+        if(!t || !r) return false;
+        if(!t->accept_request(r)) return false;
+
+        r->update_is_accepted(true);
+        db_.updateRequestStatus(r->get_student()->get_email(),
+                                t->get_email(),
+                                static_cast<int>(r->get_status()),
+                                1);
+        return true;
+}

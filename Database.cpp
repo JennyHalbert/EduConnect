@@ -7,6 +7,7 @@
 
 #include "Student.h"
 #include "Tutor.h"
+#include "Request.h"
 
 Database::Database(const std::string& filename)
     : filename_(filename) {}
@@ -38,7 +39,7 @@ static std::string encodeDays(const std::vector<bool>& days) {
     return s;
 }
 
-// ✅ NEW: small wrapper around sqlite3_exec so saveAllTutors can call execSQL(...)
+// small wrapper around sqlite3_exec so saveAllTutors can call execSQL(...)
 static bool execSQL(sqlite3* db, const char* sql) {
     char* errMsg = nullptr;
     int rc = sqlite3_exec(db, sql, nullptr, nullptr, &errMsg);
@@ -194,6 +195,86 @@ bool Database::addTutor(const std::string& name,
 
     sqlite3_finalize(stmt);
     return true;
+}
+
+bool Database::addRequest(const std::string& student_email,
+                          const std::string& tutor_email,
+                          const std::string& subject,
+                          int status,
+                          int urgency,
+                          const std::string& description,
+                          const std::vector<bool>& days,
+                          int is_accepted) {
+    if (!open()) return false;
+
+    const char* sql =
+        "INSERT INTO requests "
+        "(student_email, tutor_email, subject, description, urgency, status, is_accepted, days) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "addRequest prepare error: " << sqlite3_errmsg(db_) << "\n";
+        return false;
+    }
+
+    std::string daysStr = encodeDays(days);
+
+    sqlite3_bind_text(stmt, 1, student_email.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, tutor_email.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, subject.c_str(),       -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, description.c_str(),   -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int (stmt, 5, urgency);
+    sqlite3_bind_int (stmt, 6, status);
+    sqlite3_bind_int (stmt, 7, is_accepted);
+    sqlite3_bind_text(stmt, 8, daysStr.c_str(),       -1, SQLITE_TRANSIENT);
+
+    int rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "addRequest step error: " << sqlite3_errmsg(db_) << "\n";
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    return true;
+}
+
+bool Database::updateRequestStatus(const std::string& student_email,
+                                   const std::string& tutor_email,
+                                   int status,
+                                   int is_accepted) {
+    if (!open()) return false;
+
+    const char* sql =
+        "UPDATE requests "
+        "SET status = ?, is_accepted = ? "
+        "WHERE id = ("
+        "  SELECT id FROM requests "
+        "  WHERE student_email = ? AND tutor_email = ? "
+        "  ORDER BY id DESC LIMIT 1"
+        ");";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "updateRequestStatus prepare error: " << sqlite3_errmsg(db_) << "\n";
+        return false;
+    }
+
+    sqlite3_bind_int (stmt, 1, status);
+    sqlite3_bind_int (stmt, 2, is_accepted);
+    sqlite3_bind_text(stmt, 3, student_email.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, tutor_email.c_str(),   -1, SQLITE_TRANSIENT);
+
+    int rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "updateRequestStatus step error: " << sqlite3_errmsg(db_) << "\n";
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    return sqlite3_changes(db_) > 0;
 }
 
 // ===== bulk LOAD: DB -> in-memory maps ===============================
@@ -470,7 +551,7 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
     }
 
     for (const auto& pair : tutors) {
-        Tutor* t = pair.second;  // ✅ NOT const
+        Tutor* t = pair.second;  
         if (!t) continue;
 
         auto subs = t->get_subjects();  // returns by value, local copy is fine
@@ -493,6 +574,83 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
 
     sqlite3_finalize(stmtSubj);
     std::cout << "[DB] saveAllTutors: finished.\n";
+    return true;
+}
+
+bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& students,
+                               std::unordered_map<std::string, Tutor*>& tutors) {
+    if (!open()) return false;
+
+    const char* sql =
+        "SELECT student_email, tutor_email, subject, description, urgency, status, is_accepted, days "
+        "FROM requests;";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "loadAllRequests prepare error: " << sqlite3_errmsg(db_) << "\n";
+        return false;
+    }
+
+    int count = 0;
+    int skipped = 0;
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char* stu_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        const char* tut_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        const char* subj_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        const char* desc_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        int urgency_i       = sqlite3_column_int(stmt, 4);
+        int status_i        = sqlite3_column_int(stmt, 5);
+        int is_accepted_i   = sqlite3_column_int(stmt, 6);
+        const char* days_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
+
+        std::string stuEmail = stu_c  ? stu_c  : "";
+        std::string tutEmail = tut_c  ? tut_c  : "";
+        std::string subject  = subj_c ? subj_c : "";
+        std::string descr    = desc_c ? desc_c : "";
+        std::string daysStr  = days_c ? days_c : "";
+
+        auto stuIt = students.find(stuEmail);
+        auto tutIt = tutors.find(tutEmail);
+
+        if (stuIt == students.end() || tutIt == tutors.end()) {
+            ++skipped;
+            continue;
+        }
+
+        Student* s = stuIt->second;
+        Tutor*   t = tutIt->second;
+
+        std::vector<bool> daysVec = decodeDays(daysStr);
+        if (daysVec.empty()) daysVec.assign(7, false);
+
+        Request::UrgencyLevel urg =
+            static_cast<Request::UrgencyLevel>(urgency_i < 0 ? 0 : urgency_i);
+        Request::RequestStatus stat =
+            static_cast<Request::RequestStatus>(status_i < 0 ? 0 : status_i);
+
+        Request* r = new Request(t, s, subject, stat, urg, descr, daysVec);
+        r->update_is_accepted(is_accepted_i != 0);
+
+        s->add_request(r);
+
+        if (stat == Request::POSTED) {
+            t->receive_request(r);
+        } else if (stat == Request::MATCHED || stat == Request::COMPLETED) {
+            r->update_status(Request::POSTED);
+            t->accept_request(r);  // moves into active + sets tutor pointer
+            r->update_status(stat);
+        }
+
+        ++count;
+    }
+
+    sqlite3_finalize(stmt);
+
+    std::cout << "[DB] loadAllRequests: loaded " << count
+              << " requests from DB"
+              << (skipped ? (", skipped " + std::to_string(skipped) + " with missing users.") : ".")
+              << "\n";
     return true;
 }
 
