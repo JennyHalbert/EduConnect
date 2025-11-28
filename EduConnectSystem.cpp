@@ -31,7 +31,7 @@ EduConnectSystem::EduConnectSystem()
     // 2) Load persistent data into in-memory maps
     db_.loadAllStudents(Students);                        // fills Students[email]
     db_.loadAllTutors(Tutors, tutors_by_subject);         // fills Tutors[email] and index
-    db_.loadAllRequests(Students, Tutors); // fills requests and links to users
+    db_.loadAllRequests(Students, Tutors, requests);
     
 
     std::cout << "[EduConnectSystem] DB load complete. "
@@ -255,79 +255,54 @@ bool EduConnectSystem::update_tutor_details(std::string current_email,std::strin
 
 
 // std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
-std::vector<Tutor*> results;
-        std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days) {
-            std::vector<Tutor*> results;
-            
-            // Safety check: if subject doesn't exist in map, return empty immediately
-            if (tutors_by_subject.find(subject) == tutors_by_subject.end()) {
-                return results; 
-            }
-        
-            const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
-        
-            for (Tutor* t : candidates) {
-                bool match = false;
-                for (int i = 0; i < 7; i++) {
-                    if (days[i] && t->is_available(i)) {
-                        match = true;
-                        break;
-                    }
-                }
-                if (match) {
-                    results.push_back(t);
-                }
-            }
-        
-            // --- CRITICAL FIX: Check if empty before sorting ---
-            if (results.empty()) {
-                return results;
-            }
-            // --------------------------------------------------
-        
-            // if (sort_criteria == "RATING") {
-            //     merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
-            //         return a->avg_rating() >= b->avg_rating();
-            //     });
-            // }
-
-
+    std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
+        std::vector<Tutor*> results;
     
-        //const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
+        // Safety check
+        if(tutors_by_subject.find(subject) == tutors_by_subject.end()) {
+             return results;
+        }
 
-        // for(Tutor* t : candidates){
-        //     bool match = false;
+        const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
 
-        //     for(int i = 0; i<7;i++){             
-        //         if(days[i] && t->is_available(i)){
-        //             match = true;
-        //             break;
-        //         }
-        //     }
-        //     if(match){
-        //         results.push_back(t);
-        //     }
-        // }
+        for(Tutor* t : candidates){
+            bool match = false;
+            for(int i = 0; i<7;i++){             
+                if(days[i] && t->is_available(i)){
+                    match = true;
+                    break;
+                }
+            }
+            if(match){
+                results.push_back(t);
+            }
+        }
         
+        // CRITICAL FIX: PREVENT CRASH
+        if (results.empty()) {
+            return results;
+        }
+
         if(sort_criteria=="RATING"){
             merge_sort(results,0, results.size()-1,[](Tutor*a,Tutor* b){
                 return a->avg_rating()>= b->avg_rating();
             });
         }
         else if (sort_criteria == "EXPERIENCE") {
-        merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
-            return a->get_completed() >= b->get_completed();
-        });
+            merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+                return a->get_completed() >= b->get_completed();
+            });
         }
         else if (sort_criteria == "COMPLETIONRATE") {
-        merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
-            return a->avg_completion() >= b->avg_completion();
-        });
+            merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+                return a->avg_completion() >= b->avg_completion();
+            });
         }  
-        else
-        merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
-            return a->get_name() >= b->get_name();
-        });
+        else {
+            merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+                return a->get_name() >= b->get_name();
+            });
+        }
         return results;
 }
 
@@ -335,6 +310,9 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
                                      const std::string description,const std::string subject, const std::vector<bool>& days){
 
         Request* new_request = new Request(s,subject,urgency,description,days);
+
+        requests.push_back(new_request);
+
         for(Tutor* target : selected_tutors){
             target->receive_request(new_request);
             // db_.addRequest(s->get_email(), target->get_email(), subject,

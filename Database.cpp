@@ -902,9 +902,10 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
 
 bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& students,
     std::unordered_map<std::string, Tutor*>& tutors,
-    std::vector<Request*>& allRequests) { // Ensure you accept the vector!
+    std::vector<Request*>& allRequests) { 
 if (!open()) return false;
 
+// Select all columns
 const char* sql =
 "SELECT student_email, tutor_email, subject, description, urgency, status, is_accepted, days "
 "FROM requests;";
@@ -916,11 +917,11 @@ return false;
 }
 
 int count = 0;
+int skipped = 0;
 
 while (sqlite3_step(stmt) == SQLITE_ROW) {
-// 1. Extract Columns
 const char* stu_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-const char* tut_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)); // Might be NULL/Empty
+const char* tut_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)); 
 const char* subj_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
 const char* desc_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
 int urgency_i       = sqlite3_column_int(stmt, 4);
@@ -934,15 +935,15 @@ std::string subject  = subj_c ? subj_c : "";
 std::string descr    = desc_c ? desc_c : "";
 std::string daysStr  = days_c ? days_c : "";
 
-// 2. Find Student (Mandatory)
+// 1. Find the Student (Required)
 auto stuIt = students.find(stuEmail);
 if (stuIt == students.end()) {
-// If student doesn't exist, we can't load the request
+++skipped; 
 continue;
 }
 Student* s = stuIt->second;
 
-// 3. Find Tutor (Optional - might be empty for POSTED requests)
+// 2. Find the Tutor (Optional - allows loading POSTED requests)
 Tutor* t = nullptr;
 if (!tutEmail.empty()) {
 auto tutIt = tutors.find(tutEmail);
@@ -954,30 +955,33 @@ t = tutIt->second;
 std::vector<bool> daysVec = decodeDays(daysStr);
 if (daysVec.empty()) daysVec.assign(7, false);
 
-Request::UrgencyLevel urg = static_cast<Request::UrgencyLevel>(urgency_i < 0 ? 0 : urgency_i);
-Request::RequestStatus stat = static_cast<Request::RequestStatus>(status_i < 0 ? 0 : status_i);
+Request::UrgencyLevel urg =
+static_cast<Request::UrgencyLevel>(urgency_i < 0 ? 0 : urgency_i);
+Request::RequestStatus stat =
+static_cast<Request::RequestStatus>(status_i < 0 ? 0 : status_i);
 
-// 4. Create Request
-// Note: 't' can be nullptr here, which is perfectly fine for POSTED requests
+// 3. Create the Request
 Request* r = new Request(t, s, subject, stat, urg, descr, daysVec);
 r->update_is_accepted(is_accepted_i != 0);
 
-// 5. Link to System, Student, and Tutor
-allRequests.push_back(r); // Add to main vector
+// 4. CRITICAL: Store in main vector so it is saved later!
+allRequests.push_back(r);
+
+// Link to Student
 s->add_request(r);
 
-// If there is a tutor, ensure they have the request
+// Link to Tutor (if one exists)
 if (t) {
+// Restore tutor state
 if (stat == Request::POSTED) {
 t->receive_request(r);
 } else {
-// For MATCHED/COMPLETED, we simulate acceptance to put it in the active list
-// Temporarily set to POSTED so accept_request works
+// Determine if it should be in active or history
+// We simulate the flow to put it in the right list:
 r->update_status(Request::POSTED);
 t->receive_request(r);
 t->accept_request(r); 
-// Restore actual status
-r->update_status(stat);
+r->update_status(stat); // Restore actual status
 
 if (stat == Request::COMPLETED) {
 t->close_request(r);
