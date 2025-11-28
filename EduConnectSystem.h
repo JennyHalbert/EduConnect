@@ -38,6 +38,7 @@ public:
         const std::string description, std::string subject, const std::vector<bool>& days);
 
     bool accept_request(Tutor* t, Request* r);
+    bool complete_request(Request* r);
 
     // Requests
 
@@ -46,6 +47,7 @@ private:
     std::unordered_map<std::string, Tutor*> Tutors; 
     std::unordered_map<std::string, Student*> Students; 
     std::unordered_map<std::string, std::vector<Tutor*>> tutors_by_subject;
+    std::vector<Request*> allRequests;
     
     // --- Database ---
     Database db_{"educonnect.db"};

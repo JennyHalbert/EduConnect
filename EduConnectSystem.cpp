@@ -30,13 +30,53 @@ EduConnectSystem::EduConnectSystem()
     // 2) Load persistent data into in-memory maps
     db_.loadAllStudents(Students);                        // fills Students[email]
     db_.loadAllTutors(Tutors, tutors_by_subject);         // fills Tutors[email] and index
-    db_.loadAllRequests(Students, Tutors); // fills requests and links to users
-    
+    db_.loadAllRequests(allRequests, Students, Tutors);
+    //db_.loadAllRequests(Students, Tutors); // fills requests and links to users
+
+
+    for (Request* req : allRequests) {
+        if (req->get_student()) {
+            req->get_student()->restore_request(req);
+        }
+        if (req->get_tutor()) {
+            req->get_tutor()->restore_request(req); 
+        }
+    }
 
     std::cout << "[EduConnectSystem] DB load complete. "
               << "Students: " << Students.size()
-              << ", Tutors: "   << Tutors.size() << "\n";
+              << ", Tutors: "   << Tutors.size() 
+              << ", Requests: " << allRequests.size() << "\n";
 }
+//     std::cout << "[EduConnectSystem] DB load complete. "
+//               << "Students: " << Students.size()
+//               << ", Tutors: "   << Tutors.size() <<"\n";
+// }
+
+// EduConnectSystem::~EduConnectSystem() {
+//     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
+
+//     // 1) Save all users back to DB
+//     db_.saveAllStudents(Students);
+//     db_.saveAllTutors(Tutors);
+//     // later you can add: db_.saveAllRequests(allRequests);
+
+//     // 2) Clean up Tutors
+//     for (auto& pair : Tutors) {
+//         delete pair.second;
+//     }
+//     Tutors.clear();
+
+//     // 3) Clean up Students
+//     for (auto& pair : Students) {
+//         delete pair.second;
+//     }
+//     Students.clear();
+
+//     tutors_by_subject.clear();
+
+//     std::cout << "[EduConnectSystem] Destructor finished.\n";
+// }
 
 EduConnectSystem::~EduConnectSystem() {
     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
@@ -44,25 +84,33 @@ EduConnectSystem::~EduConnectSystem() {
     // 1) Save all users back to DB
     db_.saveAllStudents(Students);
     db_.saveAllTutors(Tutors);
-    // later you can add: db_.saveAllRequests(allRequests);
+    
+    // 2) ✅ NEW: Save Requests
+    db_.saveAllRequests(allRequests);
 
-    // 2) Clean up Tutors
+    // 3) Clean up Tutors
     for (auto& pair : Tutors) {
         delete pair.second;
     }
     Tutors.clear();
 
-    // 3) Clean up Students
+    // 4) Clean up Students
     for (auto& pair : Students) {
         delete pair.second;
     }
     Students.clear();
+    
+    // 5) ✅ NEW: Clean up Requests
+    // Since we created them with 'new', we must delete them here
+    for (Request* req : allRequests) {
+        delete req;
+    }
+    allRequests.clear();
 
     tutors_by_subject.clear();
 
     std::cout << "[EduConnectSystem] Destructor finished.\n";
 }
-
 
 // EduConnectSystem::~EduConnectSystem() {
 // // 1. Clean up Tutors
@@ -266,24 +314,311 @@ std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject
 void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency, 
                                      const std::string description,const std::string subject, const std::vector<bool>& days){
 
+                                        
         Request* new_request = new Request(s,subject,urgency,description,days);
+        allRequests.push_back(new_request);
+        
         for(Tutor* target : selected_tutors){
             target->receive_request(new_request);
-            db_.addRequest(s->get_email(), target->get_email(), subject,
-                           Request::POSTED, static_cast<int>(urgency),
-                           description, days, /*is_accepted*/0);
         }
         s->add_request(new_request);
 }
 
-bool EduConnectSystem::accept_request(Tutor* t, Request* r){
-        if(!t || !r) return false;
-        if(!t->accept_request(r)) return false;
+// #include "EduConnectSystem.h"
+// #include <iostream>
+// #include "Algorithms.h" 
+// #include "Tutor.h"
+// #include "Student.h"
+// #include <vector>
+// #include <string>
+// // #include "sqlite3.h"
 
-        r->update_is_accepted(true);
-        db_.updateRequestStatus(r->get_student()->get_email(),
-                                t->get_email(),
-                                static_cast<int>(r->get_status()),
-                                1);
-        return true;
-}
+// // EduConnectSystem::EduConnectSystem() 
+// //     : db_("educonnect.db")
+// // {
+// //     // load database in
+// //     std::cout << "[EduConnectSystem] Loading in DB.\n";
+
+// // }
+
+// EduConnectSystem::EduConnectSystem()
+//     : db_("educonnect.db")
+// {
+//     std::cout << "[EduConnectSystem] Loading from DB...\n";
+
+//     // 1) Ensure schema exists (students, tutors, subjects, requests)
+//     if (!db_.initSchema()) {
+//         std::cerr << "[EduConnectSystem] ERROR: initSchema failed.\n";
+//         // You can still run in-memory only, so just return.
+//         return;
+//     }
+
+//     // 2) Load persistent data into in-memory maps
+//     db_.loadAllStudents(Students);                        // fills Students[email]
+//     db_.loadAllTutors(Tutors, tutors_by_subject);         // fills Tutors[email] and index
+//     db_.loadAllRequests(Students, Tutors); // fills requests and links to users
+    
+
+//     std::cout << "[EduConnectSystem] DB load complete. "
+//               << "Students: " << Students.size()
+//               << ", Tutors: "   << Tutors.size() << "\n";
+// }
+
+// EduConnectSystem::~EduConnectSystem() {
+//     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
+
+//     // 1) Save all users back to DB
+//     db_.saveAllStudents(Students);
+//     db_.saveAllTutors(Tutors);
+//     // later you can add: db_.saveAllRequests(allRequests);
+
+//     // 2) Clean up Tutors
+//     for (auto& pair : Tutors) {
+//         delete pair.second;
+//     }
+//     Tutors.clear();
+
+//     // 3) Clean up Students
+//     for (auto& pair : Students) {
+//         delete pair.second;
+//     }
+//     Students.clear();
+
+//     tutors_by_subject.clear();
+
+//     std::cout << "[EduConnectSystem] Destructor finished.\n";
+// }
+
+
+// // EduConnectSystem::~EduConnectSystem() {
+// // // 1. Clean up Tutors
+// //     for (auto& pair : Tutors) {
+// //         delete pair.second;
+// //     }
+// //     Tutors.clear();
+
+// //     // 2. Clean up Students
+// //     for (auto& pair : Students) {
+// //         delete pair.second; 
+// //     }
+// //     Students.clear();
+
+// //     tutors_by_subject.clear();
+
+// //     // closeDB();
+// //     std::cout << "[EduConnectSystem] Destructor finished.\n";
+// // }
+
+// // // add db stuff in
+// void EduConnectSystem::index_tutor(Tutor* t, const std::vector<std::string>& subjects){
+//     for(const std::string& sub:subjects){
+//         tutors_by_subject[sub].push_back(t);
+//     }
+// }
+
+// void EduConnectSystem::update_tutor_subjects(Tutor* tutor, const std::vector<std::string>& new_subjects) {
+
+//     if(tutor==nullptr) return;
+
+//     std::vector<std::string> old_subjects = tutor->get_subjects();
+
+//     for(const std::string& old_sub : old_subjects){
+//         if(tutors_by_subject.count(old_sub)){
+            
+//             std::vector<Tutor*>& tutor_list = tutors_by_subject[old_sub];
+
+//             tutor_list.erase(std::remove(tutor_list.begin(),tutor_list.end(),tutor),tutor_list.end());
+//         }
+//     }
+//     tutor->set_subjects(new_subjects);
+    
+//     for(const std::string& new_sub: new_subjects){
+//         tutors_by_subject[new_sub].push_back(tutor);
+//     }
+// }
+
+// bool EduConnectSystem::update_student_details(std::string current_email, std::string new_name, std::string new_email, std::string new_password){
+//     auto it = Students.find(current_email);
+//     if(it == Students.end()) 
+//         return false;
+
+//     Student* s = it->second;
+//     //handle email changes
+//     if(current_email != new_email){
+//         if(Students.count(new_email)){//check if email is used
+//             return false;
+//         }        
+//         Students.erase(current_email);//remove student from hashmap
+//         s->set_email(new_email);//update email
+//         Students[new_email]= s;//add back to hashmap
+//     }
+//         s->set_name(new_name);
+//         s->set_password(new_password);
+//         return true;
+// }
+
+// bool EduConnectSystem::update_tutor_details(std::string current_email,std::string new_name,std::string new_email,std::string new_pass,
+//     std::vector<std::string> new_subjects,std::vector<bool> new_days){
+//     auto it = Tutors.find(current_email);
+//     if(it == Tutors.end()){
+//         return false;
+//     }  
+
+//     Tutor* t = it->second;
+
+//     if(current_email != new_email){
+//         if(Tutors.count(new_email)){
+//             return false;
+//         }
+//         Tutors.erase(current_email);
+//         t->set_email(new_email);
+//         Tutors[new_email] = t;
+//     }
+//         t->set_name(new_name);
+//         t->set_password(new_pass);
+//         t->set_subjects(new_subjects);
+//         t->set_days(new_days);
+//         return true;
+// }
+
+//     //Register Functions
+//     bool EduConnectSystem::register_tutor(std::string name, std::string email,std::string password,const std::vector<bool>& days, std::vector<std::string> subjects){
+//         if(Tutors.count(email)){
+//          return false;
+//         }
+//         Tutor* new_Tutor = new Tutor(email, name, password, days, subjects);
+//     Tutors[email] = new_Tutor;
+//         index_tutor(new_Tutor,subjects);
+//         return true;
+//     }
+
+//     bool EduConnectSystem::register_student(std::string name,std::string email,std::string password){
+//         std::cout << "[register_student] called with email=" << email << "\n";
+//         if(Students.count(email)){
+//          return false;
+//         }
+//         Student* new_Student = nullptr;
+//         new_Student = new Student(email, name, password);
+//         Students[email] = new_Student;
+//         return true;
+//     }
+
+
+//     //Login Functions
+//     bool EduConnectSystem::tutor_login(std::string email,std::string password){
+//             Tutor* temp_login = get_tutor(email);
+//             if (temp_login ==nullptr){
+//                 return false;
+//             }
+//             else if(temp_login->get_password()==password){
+//                 return true;
+//             }
+//             else{
+//                 return false;
+//             }
+//     }
+//     bool EduConnectSystem::student_login(std::string email,std::string password){
+//             Student* temp_login = get_student(email);
+//             if (temp_login ==nullptr){
+//                 return false;
+//             }
+//             else if(temp_login->get_password()==password){
+//                 return true;
+//             }
+//             else{
+//                 return false;
+//             }
+//     }
+//     //Get information functions
+//     Tutor* EduConnectSystem::get_tutor(std::string email){
+//             auto it = Tutors.find(email);
+
+//             if(it != Tutors.end()){
+//                 return it->second;
+//             }
+//             return nullptr;
+//     }
+//     Student* EduConnectSystem::get_student(std::string email){
+            
+//             auto it = Students.find(email);
+//             if(it != Students.end()){
+//                 return it->second;
+//             }
+//             return nullptr;
+//     }
+
+
+// std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
+//         std::vector<Tutor*> results;
+    
+//         const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
+
+//         for(Tutor* t : candidates){
+//             bool match = false;
+
+//             for(int i = 0; i<7;i++){             
+//                 if(days[i] && t->is_available(i)){
+//                     match = true;
+//                     break;
+//                 }
+//             }
+//             if(match){
+//                 results.push_back(t);
+//             }
+//         }
+        
+//         if(sort_criteria=="RATING"){
+//             merge_sort(results,0, results.size()-1,[](Tutor*a,Tutor* b){
+//                 return a->avg_rating()>= b->avg_rating();
+//             });
+//         }
+//         else if (sort_criteria == "EXPERIENCE") {
+//         merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+//             return a->get_completed() >= b->get_completed();
+//         });
+//         }
+//         else if (sort_criteria == "COMPLETIONRATE") {
+//         merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+//             return a->avg_completion() >= b->avg_completion();
+//         });
+//         }  
+//         else
+//         merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+//             return a->get_name() >= b->get_name();
+//         });
+//         return results;
+// }
+
+// void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selected_tutors, Request::UrgencyLevel urgency, 
+//                                      const std::string description,const std::string subject, const std::vector<bool>& days){
+
+//         Request* new_request = new Request(s,subject,urgency,description,days);
+//         for(Tutor* target : selected_tutors){
+//             target->receive_request(new_request);
+//             // db_.addRequest(s->get_email(), target->get_email(), subject,
+//             //                Request::POSTED, static_cast<int>(urgency),
+//             //                description, days, /*is_accepted*/0);
+//         }
+//         s->add_request(new_request);
+// }
+
+// // bool EduConnectSystem::accept_request(Tutor* t, Request* r){
+// //         if(!t || !r) return false;
+// //         if(!t->accept_request(r)) return false;
+
+// //         r->update_is_accepted(true);
+// //         db_.updateRequestStatus(r->get_student()->get_email(),
+// //                                 t->get_email(),
+// //                                 static_cast<int>(r->get_status()),
+// //                                 1);
+// //         return true;
+// // }
+
+// // bool EduConnectSystem::complete_request(Request* r){
+// //         if(!r || !r->get_student() || !r->get_tutor()) return false;
+// //         db_.updateRequestStatus(r->get_student()->get_email(),
+// //                                 r->get_tutor()->get_email(),
+// //                                 static_cast<int>(r->get_status()),
+// //                                 r->get_is_accepted() ? 1 : 0);
+// //         return true;
+// // }
