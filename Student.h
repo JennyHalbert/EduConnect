@@ -16,6 +16,7 @@ public:
     Student();
     Student(std::string email,std::string name,std::string password);
     void add_request(Request*& r1);
+    void restore_request(Request* r1);
     void close_request(Request* r1, int rating);
     std::vector<Request*> get_active_requests();
     std::vector<Request*> get_previous_requests();

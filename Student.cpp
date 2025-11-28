@@ -17,6 +17,20 @@
         active_requests.push_back(r1);
     }
 
+
+    ///////// added in 
+    // Used when rebuilding state from the database so we don't re-apply ratings.
+    void Student::restore_request(Request* r1) {
+        if (!r1) return;
+        if (r1->get_status() == Request::COMPLETED || r1->get_status() == Request::CANCELLED) {
+            previous_requests.push_back(r1);
+            return;
+        }
+        active_requests.push_back(r1);
+    }
+    ///////// added in 
+
+    
     //removes reqeuest from the active requests and adds it to previous requests
     void Student::close_request(Request* r1,int rating){
         r1->get_tutor()->update_ratings(rating);

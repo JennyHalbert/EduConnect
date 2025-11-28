@@ -2,6 +2,7 @@
 #include "User.h"
 #include "Tutor.h"
 #include "Request.h"
+#include <algorithm>
 
 // Tutor::Tutor(std::string email, std::string name, std::string password, std::vector<std::string> subjects)
 // : User(email, name, password), subjects(subjects){ // can use std::move in this line to increase efficiency
@@ -110,6 +111,28 @@
         if(r==nullptr) return;
         request_inbox.push(r);
     }
+/////// added in
+    // Rebuilds inbox/active state when loading from the database.
+    void Tutor::restore_request(Request* r){
+        if(!r) return;
+
+        if(r->get_status() == Request::POSTED){
+            receive_request(r);
+            return;
+        }
+
+        if(r->get_status() == Request::MATCHED){
+            if(r->get_tutor() != this){
+                r->match_tutor(this);
+            }
+
+            auto already = std::find(active_requests.begin(), active_requests.end(), r);
+            if(already == active_requests.end()){
+                active_requests.push_back(r);
+            }
+        }
+    }
+///////// added in
 
     bool Tutor::accept_request(Request* r){
         if(r->get_status()!= Request::POSTED){
@@ -121,5 +144,4 @@
         total_matched++;
         return true;
     }
-
 

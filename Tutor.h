@@ -36,6 +36,7 @@ class Tutor: public User{
         void update_matched();
 
         void receive_request(Request* r);
+        void restore_request(Request* r);
         bool accept_request(Request* r);
 
         void clean_inbox();
