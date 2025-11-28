@@ -3,6 +3,7 @@
 #include "Algorithms.h" 
 #include "Tutor.h"
 #include "Student.h"
+#include "Request.h"
 #include <vector>
 #include <string>
 // #include "sqlite3.h"
@@ -38,13 +39,38 @@ EduConnectSystem::EduConnectSystem()
               << ", Tutors: "   << Tutors.size() << "\n";
 }
 
+// EduConnectSystem::~EduConnectSystem() {
+//     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
+
+//     // 1) Save all users back to DB
+//     db_.saveAllStudents(Students);
+//     db_.saveAllTutors(Tutors);
+//     db_.saveAllRequests(requests);
+
+//     // 2) Clean up Tutors
+//     for (auto& pair : Tutors) {
+//         delete pair.second;
+//     }
+//     Tutors.clear();
+
+//     // 3) Clean up Students
+//     for (auto& pair : Students) {
+//         delete pair.second;
+//     }
+//     Students.clear();
+
+//     tutors_by_subject.clear();
+
+//     std::cout << "[EduConnectSystem] Destructor finished.\n";
+// }
+
 EduConnectSystem::~EduConnectSystem() {
     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
 
     // 1) Save all users back to DB
     db_.saveAllStudents(Students);
     db_.saveAllTutors(Tutors);
-    // later you can add: db_.saveAllRequests(allRequests);
+    db_.saveAllRequests(requests);
 
     // 2) Clean up Tutors
     for (auto& pair : Tutors) {
@@ -57,6 +83,12 @@ EduConnectSystem::~EduConnectSystem() {
         delete pair.second;
     }
     Students.clear();
+
+    // 4) Clean up Requests
+    for (Request* req : requests) {
+        delete req;
+    }
+    requests.clear();
 
     tutors_by_subject.clear();
 
@@ -276,6 +308,23 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
         s->add_request(new_request);
 }
 
+// bool EduConnectSystem::accept_request(Tutor* t, Request* r) {
+//     if (!t || !r) return false;
+
+//     // Ask the Tutor object to accept the request (moves it from inbox → active)
+//     if (!t->accept_request(r)) {
+//         return false;
+//     }
+
+//     // Mark the request as accepted in the domain model
+//     r->update_is_accepted(true);
+
+//     // Persist all requests back to the DB so the student sees the updated state next launch
+//     db_.saveAllRequests(allRequests);
+
+//     return true;
+// }
+
 // bool EduConnectSystem::accept_request(Tutor* t, Request* r){
 //         if(!t || !r) return false;
 //         if(!t->accept_request(r)) return false;
@@ -287,6 +336,43 @@ void EduConnectSystem::send_requests(Student* s,const std::vector<Tutor*>& selec
 //                                 1);
 //         return true;
 // }
+
+bool EduConnectSystem::accept_request(Tutor* t, Request* r) {
+    if (!t || !r) return false;
+
+    // Let tutor accept (inbox → active request)
+    if (!t->accept_request(r)) return false;
+
+    r->update_status(Request::MATCHED);
+    r->update_is_accepted(true);
+
+    std::string studentEmail;
+    if (r->get_student()) {
+        studentEmail = r->get_student()->get_email();
+    }
+    
+    db_.updateRequestStatus(
+        r->get_student()->get_email(),
+        t->get_email(),
+        static_cast<int>(Request::MATCHED),
+        true
+    );
+
+
+    // Mark in memory
+    // r->update_is_accepted(true);
+
+    // // Update DB: student email, tutor email, status, is_accepted
+    // db_.updateRequestStatus(
+    //     r->get_student()->get_email(),
+    //     t->get_email(),
+    //     static_cast<int>(r->get_status()),
+    //     true
+    // );
+
+    return true;
+}
+
 
 // bool EduConnectSystem::complete_request(Request* r){
 //         if(!r || !r->get_student() || !r->get_tutor()) return false;

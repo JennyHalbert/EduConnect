@@ -47,6 +47,8 @@ private:
     std::unordered_map<std::string, Tutor*> Tutors; 
     std::unordered_map<std::string, Student*> Students; 
     std::unordered_map<std::string, std::vector<Tutor*>> tutors_by_subject;
+    std::vector<Request*> requests; // Add this to store all requests
+
     
     // --- Database ---
     Database db_{"educonnect.db"};

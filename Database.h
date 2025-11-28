@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <sqlite3.h>
 #include <vector>
+#include "Request.h"
 
 class Student;
 class Tutor;
@@ -25,9 +26,23 @@ public:
                   const std::string& email,
                   const std::string& password);
 
-    bool addRequest(int tutor_ID, int student_ID, const std::string& subject,
-                    int status, int urgency, const std::string& description,
-                    const std::string& days);
+    // bool addRequest(int tutor_ID, int student_ID, const std::string& subject,
+    //                 int status, int urgency, const std::string& description,
+    //                 const std::string& days);
+
+    bool addRequest(const std::string& student_email,
+        const std::string& tutor_email,
+        const std::string& subject,
+        int status,
+        int urgency,
+        const std::string& description,
+        const std::vector<bool>& days,
+        bool is_accepted);
+
+    bool updateRequestStatus(const std::string& student_email,
+                 const std::string& tutor_email,
+                 int status,
+                 bool is_accepted);
 
     // bool addRequest(const std::string& student_email,
     //                     const std::string& tutor_email,
@@ -49,6 +64,9 @@ public:
                        std::unordered_map<std::string, std::vector<Tutor*>>& tutors_by_subject);
     bool loadAllRequests(std::unordered_map<std::string, Student*>& students,
                          std::unordered_map<std::string, Tutor*>& tutors);
+        // dataBase.h
+  
+
 
     // load in request 
     
@@ -56,6 +74,7 @@ public:
     bool saveAllStudents(const std::unordered_map<std::string, Student*>& students);
     // bool saveAllTutors(const std::unordered_map<std::string, Tutor*>& tutors);
     bool saveAllTutors(const std::unordered_map<std::string, Tutor*>& tutors);
+    bool saveAllRequests(std::vector<Request*>& requests);
 
 
 private:
