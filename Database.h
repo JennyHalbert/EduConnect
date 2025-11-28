@@ -63,7 +63,8 @@ public:
     bool loadAllTutors(std::unordered_map<std::string, Tutor*>& tutors,
                        std::unordered_map<std::string, std::vector<Tutor*>>& tutors_by_subject);
     bool loadAllRequests(std::unordered_map<std::string, Student*>& students,
-                         std::unordered_map<std::string, Tutor*>& tutors);
+                        std::unordered_map<std::string, Tutor*>& tutors,
+                        std::vector<Request*>& allRequests);
         // dataBase.h
   
 

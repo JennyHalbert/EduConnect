@@ -47,25 +47,47 @@
         return subjects;
     }
 
-std::vector<Request*> Tutor::get_active_requests(){
-        std::vector<Request*> temp_list;
-        Request* temp;
-        for(int i = 0; i<active_requests.size();i++){
-            temp = active_requests[i];
-            if(temp->get_status()== Request::COMPLETED){
-                active_requests.pop_back();
-                previous_requests.push_back(temp);
-            }
-            else{
-                active_requests.pop_back();
-                temp_list.push_back(temp);
-            }
-        }
-        for(Request* r: temp_list){
-            active_requests.push_back(r);
-        }
-        return active_requests;
+// std::vector<Request*> Tutor::get_active_requests(){
+//         std::vector<Request*> temp_list;
+//         Request* temp;
+//         for(int i = 0; i<active_requests.size();i++){
+//             temp = active_requests[i];
+//             if(temp->get_status()== Request::COMPLETED){
+//                 active_requests.pop_back();
+//                 previous_requests.push_back(temp);
+//             }
+//             else{
+//                 active_requests.pop_back();
+//                 temp_list.push_back(temp);
+//             }
+//         }
+//         for(Request* r: temp_list){
+//             active_requests.push_back(r);
+//         }
+//         return active_requests;
 
+// }
+
+// Tutor.cpp
+
+std::vector<Request*> Tutor::get_active_requests() {
+    std::vector<Request*> still_active;
+    
+    // Iterate through the current active_requests
+    for (Request* r : active_requests) {
+        if (r->get_status() == Request::COMPLETED) {
+            // Move to previous history
+            previous_requests.push_back(r);
+        } else {
+            // Keep in active
+            still_active.push_back(r);
+        }
+    }
+
+    // Replace the old list with the filtered list
+    active_requests = still_active;
+    
+    return active_requests;
 }
 
     int Tutor::get_completed() const{

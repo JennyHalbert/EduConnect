@@ -314,6 +314,7 @@ bool Database::addTutor(const std::string& name,
 //     return true;
 // }
 
+
 bool Database::loadAllStudents(std::unordered_map<std::string, Student*>& students) {
     if (!open()) return false;
 
@@ -360,6 +361,54 @@ bool Database::loadAllStudents(std::unordered_map<std::string, Student*>& studen
     std::cout << "loadAllStudents: loaded " << count << " students from DB.\n";
     return true;
 }
+
+
+// bool Database::loadAllStudents(std::unordered_map<std::string, Student*>& students) {
+//     if (!open()) return false;
+
+//     const char* sql = "SELECT name, email, password FROM students;";
+//     sqlite3_stmt* stmt = nullptr;
+
+//     if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+//         std::cerr << "loadAllStudents prepare error: "
+//                   << sqlite3_errmsg(db_) << "\n";
+//         return false;
+//     }
+
+//     int count = 0;
+
+//     while (sqlite3_step(stmt) == SQLITE_ROW) {
+//         const char* name_c  =
+//             reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+//         const char* email_c =
+//             reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+//         const char* pass_c  =
+//             reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+
+//         std::string name  = name_c  ? name_c  : "";
+//         std::string email = email_c ? email_c : "";
+//         std::string pass  = pass_c  ? pass_c  : "";
+
+//         if (email.empty()) {
+//             continue;
+//         }
+
+//         if (students.count(email)) {
+//             // already loaded
+//             continue;
+//         }
+
+//         // Student(email, name, password)
+//         Student* s = new Student(email, name, pass);
+//         students[email] = s;
+//         ++count;
+//     }
+
+//     sqlite3_finalize(stmt);
+
+//     std::cout << "loadAllStudents: loaded " << count << " students from DB.\n";
+//     return true;
+// }
 
 bool Database::saveAllRequests(std::vector<Request*>& requests) {
     if (!open()) return false;
