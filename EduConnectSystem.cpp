@@ -254,24 +254,60 @@ bool EduConnectSystem::update_tutor_details(std::string current_email,std::strin
     }
 
 
-std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
-        std::vector<Tutor*> results;
-    
-        const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
-
-        for(Tutor* t : candidates){
-            bool match = false;
-
-            for(int i = 0; i<7;i++){             
-                if(days[i] && t->is_available(i)){
-                    match = true;
-                    break;
+// std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days){
+std::vector<Tutor*> results;
+        std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject, std::string sort_criteria, const std::vector<bool> days) {
+            std::vector<Tutor*> results;
+            
+            // Safety check: if subject doesn't exist in map, return empty immediately
+            if (tutors_by_subject.find(subject) == tutors_by_subject.end()) {
+                return results; 
+            }
+        
+            const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
+        
+            for (Tutor* t : candidates) {
+                bool match = false;
+                for (int i = 0; i < 7; i++) {
+                    if (days[i] && t->is_available(i)) {
+                        match = true;
+                        break;
+                    }
+                }
+                if (match) {
+                    results.push_back(t);
                 }
             }
-            if(match){
-                results.push_back(t);
+        
+            // --- CRITICAL FIX: Check if empty before sorting ---
+            if (results.empty()) {
+                return results;
             }
-        }
+            // --------------------------------------------------
+        
+            // if (sort_criteria == "RATING") {
+            //     merge_sort(results, 0, results.size() - 1, [](Tutor* a, Tutor* b) {
+            //         return a->avg_rating() >= b->avg_rating();
+            //     });
+            // }
+
+
+    
+        //const std::vector<Tutor*>& candidates = tutors_by_subject[subject];
+
+        // for(Tutor* t : candidates){
+        //     bool match = false;
+
+        //     for(int i = 0; i<7;i++){             
+        //         if(days[i] && t->is_available(i)){
+        //             match = true;
+        //             break;
+        //         }
+        //     }
+        //     if(match){
+        //         results.push_back(t);
+        //     }
+        // }
         
         if(sort_criteria=="RATING"){
             merge_sort(results,0, results.size()-1,[](Tutor*a,Tutor* b){

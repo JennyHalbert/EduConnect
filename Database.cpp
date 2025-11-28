@@ -902,7 +902,7 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
 
 bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& students,
     std::unordered_map<std::string, Tutor*>& tutors,
-    std::vector<Request*>& allRequests) { // Ensure you have the vector param from the previous fix
+    std::vector<Request*>& allRequests) { // Ensure you accept the vector!
 if (!open()) return false;
 
 const char* sql =
@@ -916,11 +916,11 @@ return false;
 }
 
 int count = 0;
-int skipped = 0;
 
 while (sqlite3_step(stmt) == SQLITE_ROW) {
+// 1. Extract Columns
 const char* stu_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-const char* tut_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)); // Can be empty!
+const char* tut_c   = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)); // Might be NULL/Empty
 const char* subj_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
 const char* desc_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
 int urgency_i       = sqlite3_column_int(stmt, 4);
@@ -934,76 +934,61 @@ std::string subject  = subj_c ? subj_c : "";
 std::string descr    = desc_c ? desc_c : "";
 std::string daysStr  = days_c ? days_c : "";
 
-// 1. Find the Student (MANDATORY)
+// 2. Find Student (Mandatory)
 auto stuIt = students.find(stuEmail);
 if (stuIt == students.end()) {
-++skipped; // Student doesn't exist? Skip request.
+// If student doesn't exist, we can't load the request
 continue;
 }
 Student* s = stuIt->second;
 
-// 2. Find the Tutor (OPTIONAL)
+// 3. Find Tutor (Optional - might be empty for POSTED requests)
 Tutor* t = nullptr;
 if (!tutEmail.empty()) {
 auto tutIt = tutors.find(tutEmail);
 if (tutIt != tutors.end()) {
 t = tutIt->second;
-} else {
-// Tutor email is set but user not found? Data inconsistency.
-++skipped;
-continue;
 }
 }
 
 std::vector<bool> daysVec = decodeDays(daysStr);
 if (daysVec.empty()) daysVec.assign(7, false);
 
-Request::UrgencyLevel urg =
-static_cast<Request::UrgencyLevel>(urgency_i < 0 ? 0 : urgency_i);
-Request::RequestStatus stat =
-static_cast<Request::RequestStatus>(status_i < 0 ? 0 : status_i);
+Request::UrgencyLevel urg = static_cast<Request::UrgencyLevel>(urgency_i < 0 ? 0 : urgency_i);
+Request::RequestStatus stat = static_cast<Request::RequestStatus>(status_i < 0 ? 0 : status_i);
 
-// Create Request (t might be nullptr, which is allowed for POSTED requests)
+// 4. Create Request
+// Note: 't' can be nullptr here, which is perfectly fine for POSTED requests
 Request* r = new Request(t, s, subject, stat, urg, descr, daysVec);
 r->update_is_accepted(is_accepted_i != 0);
 
-// Add to main vector
-allRequests.push_back(r);
-
-// Link to Student
+// 5. Link to System, Student, and Tutor
+allRequests.push_back(r); // Add to main vector
 s->add_request(r);
 
-// Link to Tutor (only if one exists)
+// If there is a tutor, ensure they have the request
 if (t) {
 if (stat == Request::POSTED) {
 t->receive_request(r);
-} else if (stat == Request::MATCHED || stat == Request::COMPLETED) {
-// Manually setting state for loaded matched requests
-// Since 't' is passed to constructor, r->tutor is set.
-// We just need to ensure the Tutor object knows about this request.
-// We can use a helper or force it into active_requests:
-
-// Hacky way to simulate "accept" without changing status back to POSTED
-// Assuming Tutor has a way to add directly to active_requests or we use receive_request + accept
-// Simpler for now:
+} else {
+// For MATCHED/COMPLETED, we simulate acceptance to put it in the active list
+// Temporarily set to POSTED so accept_request works
 r->update_status(Request::POSTED);
 t->receive_request(r);
-t->accept_request(r); // Moves to active
-r->update_status(stat); // Restore correct status (e.g. COMPLETED)
+t->accept_request(r); 
+// Restore actual status
+r->update_status(stat);
 
 if (stat == Request::COMPLETED) {
-t->close_request(r); // Move to history if needed
+t->close_request(r);
 }
 }
 }
-
 ++count;
 }
 
 sqlite3_finalize(stmt);
-
-std::cout << "[DB] loadAllRequests: loaded " << count
-<< " requests, skipped " << skipped << ".\n";
+std::cout << "[DB] loadAllRequests: loaded " << count << " requests.\n";
 return true;
 }
 
