@@ -477,6 +477,93 @@ bool Database::saveAllStudents(const std::unordered_map<std::string, Student*>& 
     return true;
 }
 
+// In jennyhalbert/educonnect/EduConnect-requests_db_intergration/Database.cpp
+
+// ... append this function to the file ...
+
+bool Database::saveAllRequests(const std::unordered_map<std::string, Tutor*>& tutors) {
+    if (!open()) return false;
+
+    std::cout << "[DB] saveAllRequests: saving requests...\n";
+
+    // 1. Clear existing requests to ensure a clean slate (avoids duplicates)
+    if (!execSQL(db_, "DELETE FROM requests;")) {
+        std::cerr << "saveAllRequests: failed to clear requests table.\n";
+        return false;
+    }
+
+    // 2. Prepare Insert Statement
+    const char* sql =
+        "INSERT INTO requests "
+        "(student_email, tutor_email, subject, description, urgency, status, is_accepted, days) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "saveAllRequests prepare error: " << sqlite3_errmsg(db_) << "\n";
+        return false;
+    }
+
+    int count = 0;
+
+    // 3. Iterate over all tutors
+    for (const auto& pair : tutors) {
+        Tutor* t = pair.second;
+        if (!t) continue;
+
+        // --- FIX: Gather requests from ALL lists (Inbox, Active, Previous) ---
+        std::vector<Request*> all_requests;
+
+        // A. PENDING requests (The ones in the inbox that haven't been accepted yet)
+        // We MUST save these so the student sees them as "Posted" upon reload.
+        std::vector<Request*> inbox = t->get_valid_inbox(); 
+        all_requests.insert(all_requests.end(), inbox.begin(), inbox.end());
+
+        // B. ACTIVE requests (Matches)
+        std::vector<Request*> active = t->get_active_requests();
+        all_requests.insert(all_requests.end(), active.begin(), active.end());
+
+        // C. PREVIOUS requests (History)
+        std::vector<Request*> previous = t->get_previous_requests();
+        all_requests.insert(all_requests.end(), previous.begin(), previous.end());
+        // ---------------------------------------------------------------------
+
+        for (Request* r : all_requests) {
+            if (!r || !r->get_student()) continue;
+
+            sqlite3_reset(stmt);
+            sqlite3_clear_bindings(stmt);
+
+            std::string daysStr = encodeDays(r->get_days());
+
+            // Bind 1: Student Email
+            sqlite3_bind_text(stmt, 1, r->get_student()->get_email().c_str(), -1, SQLITE_TRANSIENT);
+            
+            // Bind 2: Tutor Email 
+            // We use t->get_email() because for pending requests, r->get_tutor() might still be null.
+            sqlite3_bind_text(stmt, 2, t->get_email().c_str(),                -1, SQLITE_TRANSIENT); 
+            
+            // Bind 3-8: Request Details
+            sqlite3_bind_text(stmt, 3, r->get_subject().c_str(),              -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 4, r->get_description().c_str(),          -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int (stmt, 5, static_cast<int>(r->get_urgency()));
+            sqlite3_bind_int (stmt, 6, static_cast<int>(r->get_status()));
+            sqlite3_bind_int (stmt, 7, r->get_is_accepted() ? 1 : 0);
+            sqlite3_bind_text(stmt, 8, daysStr.c_str(),                       -1, SQLITE_TRANSIENT);
+
+            int rc = sqlite3_step(stmt);
+            if (rc != SQLITE_DONE) {
+                std::cerr << "saveAllRequests step error: " << sqlite3_errmsg(db_) << "\n";
+            } else {
+                ++count;
+            }
+        }
+    }
+
+    sqlite3_finalize(stmt);
+    std::cout << "[DB] saveAllRequests: saved " << count << " requests.\n";
+    return true;
+}
 
 bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tutors) {
     if (!open()) return false;

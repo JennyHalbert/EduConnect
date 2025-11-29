@@ -44,7 +44,7 @@ EduConnectSystem::~EduConnectSystem() {
     // 1) Save all users back to DB
     db_.saveAllStudents(Students);
     db_.saveAllTutors(Tutors);
-    // later you can add: db_.saveAllRequests(allRequests);
+    db_.saveAllRequests(Tutors);    // later you can add: db_.saveAllRequests(allRequests);
 
     // 2) Clean up Tutors
     for (auto& pair : Tutors) {
