@@ -18,6 +18,7 @@ class Request{
     UrgencyLevel urgency;
     RequestStatus status;
     bool is_accepted;
+    bool has_rated = false;
     std::vector<bool> days;
     int request_ID;
 
@@ -40,6 +41,8 @@ class Request{
     void update_is_accepted(bool accept);
     bool match_tutor(Tutor* t); //new
     int get_request_ID() const;
+    bool get_has_rated() const { return has_rated; }
+    void set_has_rated(bool v) { has_rated = v; }
 };
 
 struct CompareRequestUrgency {//define a structure to handle the logic for the priority queue comparisons

@@ -1022,7 +1022,8 @@ void LoginFrame::student_refresh_request_lists(){
 
 	//check for unrated requests
 	for(Request* r: active_req){
-		if (r->get_status() == Request::COMPLETED) {
+		// if (r->get_status() == Request::COMPLETED) {
+		if (r->get_status() == Request::COMPLETED && !r->get_has_rated()) {
             unrated_requests.push_back(r);
 	}
 	//Rate unrated requests

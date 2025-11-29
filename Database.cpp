@@ -108,6 +108,7 @@ bool Database::initSchema() {
             description   TEXT,
             urgency       INTEGER NOT NULL,
             status        INTEGER NOT NULL,
+            has_rated     INTEGER NOT NULL DEFAULT 0,  -- 1 = rated, 0 = not rated
             is_accepted   INTEGER NOT NULL,  -- 1 = active, 0 = previous
             days          TEXT NOT NULL,     -- e.g. "1010100" for Mon, Wed, Fri
             FOREIGN KEY(student_email) REFERENCES students(email),
@@ -369,8 +370,8 @@ bool Database::loadAllTutors(std::unordered_map<std::string, Tutor*>& tutors,
 
         Tutor* t = new Tutor(email, name, password, days_vec, empty_subjects);
 
-        // TODO: if you have a set_totals(...) method, call it here:
-        // t->set_totals(total_ratings, total_completed, total_matched);
+        t->set_totals(total_ratings, total_completed, total_matched);
+
 
         tutors[email] = t;
         ++count;
@@ -495,8 +496,9 @@ bool Database::saveAllRequests(const std::unordered_map<std::string, Tutor*>& tu
     // 2. Prepare Insert Statement
     const char* sql =
         "INSERT INTO requests "
-        "(student_email, tutor_email, subject, description, urgency, status, is_accepted, days) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        "(student_email, tutor_email, subject, description, urgency, status, is_accepted, has_rated, days) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
 
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -549,7 +551,8 @@ bool Database::saveAllRequests(const std::unordered_map<std::string, Tutor*>& tu
             sqlite3_bind_int (stmt, 5, static_cast<int>(r->get_urgency()));
             sqlite3_bind_int (stmt, 6, static_cast<int>(r->get_status()));
             sqlite3_bind_int (stmt, 7, r->get_is_accepted() ? 1 : 0);
-            sqlite3_bind_text(stmt, 8, daysStr.c_str(),                       -1, SQLITE_TRANSIENT);
+            sqlite3_bind_int (stmt, 8, r->get_has_rated() ? 1 : 0);
+            sqlite3_bind_text(stmt, 9, daysStr.c_str(),                       -1, SQLITE_TRANSIENT);
 
             int rc = sqlite3_step(stmt);
             if (rc != SQLITE_DONE) {
@@ -669,8 +672,9 @@ bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& studen
     if (!open()) return false;
 
     const char* sql =
-        "SELECT student_email, tutor_email, subject, description, urgency, status, is_accepted, days "
+        "SELECT student_email, tutor_email, subject, description, urgency, status, is_accepted, has_rated, days "
         "FROM requests;";
+
 
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -689,7 +693,8 @@ bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& studen
         int urgency_i       = sqlite3_column_int(stmt, 4);
         int status_i        = sqlite3_column_int(stmt, 5);
         int is_accepted_i   = sqlite3_column_int(stmt, 6);
-        const char* days_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 7));
+        int has_rated_i     = sqlite3_column_int(stmt, 7);
+        const char* days_c  = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 8));
 
         std::string stuEmail = stu_c  ? stu_c  : "";
         std::string tutEmail = tut_c  ? tut_c  : "";
@@ -718,6 +723,7 @@ bool Database::loadAllRequests(std::unordered_map<std::string, Student*>& studen
 
         Request* r = new Request(t, s, subject, stat, urg, descr, daysVec);
         r->update_is_accepted(is_accepted_i != 0);
+        r->set_has_rated(has_rated_i != 0);
 
         s->add_request(r);
 

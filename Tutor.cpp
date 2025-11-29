@@ -68,6 +68,12 @@
 
 // }
 
+void Tutor::set_totals(double totalRatings, int completed, int matched) {
+    total_ratings  = totalRatings;
+    total_completed = completed;
+    total_matched   = matched;
+}
+
 std::vector<Request*> Tutor::get_active_requests() {
     // Move COMPLETED requests from active_requests -> previous_requests
     auto it = active_requests.begin();

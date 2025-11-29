@@ -40,6 +40,8 @@ class Tutor: public User{
         void receive_request(Request* r);
         bool accept_request(Request* r);
         void close_request(Request*r);
+        void set_totals(double totalRatings, int completed, int matched);
+        double get_total_ratings() const { return total_ratings; }
 
         void clean_inbox();
         std::vector<Request*> get_valid_inbox();
