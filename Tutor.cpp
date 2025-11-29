@@ -47,26 +47,44 @@
         return subjects;
     }
 
-std::vector<Request*> Tutor::get_active_requests(){
-        std::vector<Request*> temp_list;
-        Request* temp;
-        for(int i = 0; i<active_requests.size();i++){
-            temp = active_requests[i];
-            if(temp->get_status()== Request::COMPLETED){
-                active_requests.pop_back();
-                previous_requests.push_back(temp);
-            }
-            else{
-                active_requests.pop_back();
-                temp_list.push_back(temp);
-            }
-        }
-        for(Request* r: temp_list){
-            active_requests.push_back(r);
-        }
-        return active_requests;
+// std::vector<Request*> Tutor::get_active_requests(){
+//         std::vector<Request*> temp_list;
+//         Request* temp;
+//         for(int i = 0; i<active_requests.size();i++){
+//             temp = active_requests[i];
+//             if(temp->get_status()== Request::COMPLETED){
+//                 active_requests.pop_back();
+//                 previous_requests.push_back(temp);
+//             }
+//             else{
+//                 active_requests.pop_back();
+//                 temp_list.push_back(temp);
+//             }
+//         }
+//         for(Request* r: temp_list){
+//             active_requests.push_back(r);
+//         }
+//         return active_requests;
 
+// }
+
+std::vector<Request*> Tutor::get_active_requests() {
+    // Move COMPLETED requests from active_requests -> previous_requests
+    auto it = active_requests.begin();
+    while (it != active_requests.end()) {
+        Request* r = *it;
+        if (r && r->get_status() == Request::COMPLETED) {
+            previous_requests.push_back(r);
+            it = active_requests.erase(it);   // erase returns the next iterator
+        } else {
+            ++it;
+        }
+    }
+
+    // Return the remaining active requests (copy)
+    return active_requests;
 }
+
 
     int Tutor::get_completed() const{
         return total_completed;
