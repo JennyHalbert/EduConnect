@@ -1006,65 +1006,182 @@ void LoginFrame::on_send_requests(wxCommandEvent& evt){
 
 
 }
+void LoginFrame::student_refresh_request_lists() {
+    student_active_requests_list->Clear();
+    student_history_requests_list->Clear();
+    student_displayed_active_requests.clear();
 
-//Student Request Management
-void LoginFrame::student_refresh_request_lists(){
-	student_active_requests_list->Clear();
-	student_history_requests_list->Clear();
-	student_displayed_active_requests.clear();
+    std::string email = student_username->GetValue().ToStdString();
+    Student* s = connection_system->get_student(email);
+    if (!s) return;
 
-	std::string email = student_username->GetValue().ToStdString();
-	Student* s = connection_system->get_student(email);
+    // 1) Get current active requests and collect unrated completed ones
+    std::vector<Request*> active_req = s->get_active_requests();
+    std::vector<Request*> unrated_requests;
 
-	if(!s) return;
-	std::vector<Request*> unrated_requests;
-	std::vector<Request*> active_req = s->get_active_requests();
+    for (Request* r : active_req) {
+        if (!r) continue;
 
-	//check for unrated requests
-	for(Request* r: active_req){
-		// if (r->get_status() == Request::COMPLETED) {
-		if (r->get_status() == Request::COMPLETED && !r->get_has_rated()) {
+        if (r->get_status() == Request::COMPLETED &&
+            !r->get_has_rated()) {
             unrated_requests.push_back(r);
-	}
-	//Rate unrated requests
-	if(!unrated_requests.empty()){
-		wxMessageBox("You have " + std::to_string(unrated_requests.size()) + 
-                     " completed session(s) to rate.", "Feedback Required");
-		for(Request* req: unrated_requests){
-			std::string tutor_name = req->get_tutor()->get_name();
-			RatingDialog dlg(this, tutor_name);
-			if(dlg.ShowModal() == wxID_OK){
-				int rating = dlg.GetRating();
-				s->close_request(req,rating);
-			}
-		}
-	}
-	//Get updated list of active requests
-	active_req = s->get_active_requests();
-	for(Request* r: active_req){
-		std::string label = "Subject: " + r->get_subject()+" | Status: "+ (r->get_status() == Request::MATCHED ? "Matched" : "Posted") + " | ";
+        }
+    }   // <-- make sure this brace exists: it closes the for-loop
 
-		if(r->get_status()==Request::MATCHED && r->get_tutor() != nullptr){
-			label += " Tutor: " + r->get_tutor()->get_name();
-		}
-		student_active_requests_list->Append(label);
-		student_displayed_active_requests.push_back(r);
-	}
 
-	//get historical requests
-	const std::vector<Request*>& history = s->get_previous_requests();
+    // 2) Rate unrated requests safely (iterate a COPY)
+    if (!unrated_requests.empty()) {
+        wxMessageBox(
+            "You have " + std::to_string(unrated_requests.size()) +
+            " completed session(s) to rate.",
+            "Feedback Required"
+        );
 
-	int count = history.size();
-	int start = (count>10) ? count-10:0;
+        std::vector<Request*> toRate = unrated_requests;  // copy
 
-	for(int i = start; i<count;i++){
-		Request* r = history[i];
-		std::string label = "Subject: " + r->get_subject()+" | Status: Completed | Tutor: " + r->get_tutor()->get_name();
-		student_history_requests_list->Append(label);
-	}
-	
-	}
+        for (Request* req : toRate) {
+            if (!req) continue;
+
+            Tutor* t = req->get_tutor();
+            if (!t) {
+                wxMessageBox("Error: Request has no tutor!", "Error");
+                continue;
+            }
+
+            RatingDialog dlg(this, t->get_name());
+            if (dlg.ShowModal() == wxID_OK) {
+                int rating = dlg.GetRating();
+                s->close_request(req, rating);
+            }
+        }
+    }
+
+    // 3) Re-fetch the updated active list after rating
+    active_req = s->get_active_requests();
+    for (Request* r : active_req) {
+        if (!r) continue;
+
+        std::string label =
+            "Subject: " + r->get_subject() +
+            " | Status: " +
+            (r->get_status() == Request::MATCHED ? "Matched" : "Posted") +
+            " | ";
+
+        if (r->get_status() == Request::MATCHED && r->get_tutor() != nullptr) {
+            label += " Tutor: " + r->get_tutor()->get_name();
+        }
+
+        student_active_requests_list->Append(label);
+        student_displayed_active_requests.push_back(r);
+    }
+
+    // 4) Fill history list (last 10 completed)
+    const std::vector<Request*>& history = s->get_previous_requests();
+    int count = static_cast<int>(history.size());
+    int start = (count > 10) ? count - 10 : 0;
+
+    for (int i = start; i < count; ++i) {
+        Request* r = history[i];
+        if (!r) continue;
+
+        std::string tutorName =
+            (r->get_tutor() ? r->get_tutor()->get_name() : "Unknown");
+
+        std::string label =
+            "Subject: " + r->get_subject() +
+            " | Status: Completed | Tutor: " + tutorName;
+
+        student_history_requests_list->Append(label);
+    }
 }
+
+
+// //Student Request Management
+// void LoginFrame::student_refresh_request_lists(){
+// 	student_active_requests_list->Clear();
+// 	student_history_requests_list->Clear();
+// 	student_displayed_active_requests.clear();
+
+// 	std::string email = student_username->GetValue().ToStdString();
+// 	Student* s = connection_system->get_student(email);
+
+// 	if(!s) return;
+// 	std::vector<Request*> unrated_requests;
+// 	std::vector<Request*> active_req = s->get_active_requests();
+
+// 	//check for unrated requests
+// 	for(Request* r: active_req){
+// 		// if (r->get_status() == Request::COMPLETED) {
+// 		if (r->get_status() == Request::COMPLETED && !r->get_has_rated()) {
+//             unrated_requests.push_back(r);
+// 	}
+// 	//Rate unrated requests
+// 	// if(!unrated_requests.empty()){
+// 	// 	wxMessageBox("You have " + std::to_string(unrated_requests.size()) + 
+//     //                  " completed session(s) to rate.", "Feedback Required");
+// 	// 	for(Request* req: unrated_requests){
+// 	// 		std::string tutor_name = req->get_tutor()->get_name();
+// 	// 		RatingDialog dlg(this, tutor_name);
+// 	// 		if(dlg.ShowModal() == wxID_OK){
+// 	// 			int rating = dlg.GetRating();
+// 	// 			s->close_request(req,rating);
+// 	// 		}
+// 	// 	}
+// 	// }
+// 	if (!unrated_requests.empty()) {
+//     wxMessageBox(
+//         "You have " + std::to_string(unrated_requests.size()) +
+//         " completed session(s) to rate.", 
+//         "Feedback Required"
+//     );
+
+//     // Make a COPY so we do not mutate the vector we are iterating
+//     std::vector<Request*> copy = unrated_requests;
+
+//     for (Request* req : copy) {
+//         if (!req) continue;
+
+//         // Defensive null check for tutor
+//         Tutor* t = req->get_tutor();
+//         if (!t) {
+//             wxMessageBox("Error: This request has no tutor assigned!", "Error");
+//             continue;
+//         }
+
+//         RatingDialog dlg(this, t->get_name());
+//         if (dlg.ShowModal() == wxID_OK) {
+//             int rating = dlg.GetRating();
+//             s->close_request(req, rating);
+//         }
+//     }
+// }
+
+// 	//Get updated list of active requests
+// 	active_req = s->get_active_requests();
+// 	for(Request* r: active_req){
+// 		std::string label = "Subject: " + r->get_subject()+" | Status: "+ (r->get_status() == Request::MATCHED ? "Matched" : "Posted") + " | ";
+
+// 		if(r->get_status()==Request::MATCHED && r->get_tutor() != nullptr){
+// 			label += " Tutor: " + r->get_tutor()->get_name();
+// 		}
+// 		student_active_requests_list->Append(label);
+// 		student_displayed_active_requests.push_back(r);
+// 	}
+
+// 	//get historical requests
+// 	const std::vector<Request*>& history = s->get_previous_requests();
+
+// 	int count = history.size();
+// 	int start = (count>10) ? count-10:0;
+
+// 	for(int i = start; i<count;i++){
+// 		Request* r = history[i];
+// 		std::string label = "Subject: " + r->get_subject()+" | Status: Completed | Tutor: " + r->get_tutor()->get_name();
+// 		student_history_requests_list->Append(label);
+// 	}
+	
+// 	}
+// }
 
 void LoginFrame::student_on_mark_complete(wxCommandEvent& evt){
 		int sel = student_active_requests_list->GetSelection();
