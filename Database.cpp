@@ -615,6 +615,8 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
         int    completed  = t->get_completed();
         double total_ratings = avg * completed;
 
+        std :: cout << "total ratings calculated for tutor " << t->get_email() << ": " << total_ratings << "\n";
+
         sqlite3_bind_double(stmtTut, 5, total_ratings);
         sqlite3_bind_int   (stmtTut, 6, completed);
         sqlite3_bind_int   (stmtTut, 7, t->get_matched());

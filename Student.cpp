@@ -14,8 +14,20 @@
         this->password = password;
     }
 
-    void Student:: add_request(Request*& r1) {
-        active_requests.push_back(r1);
+    // void Student:: add_request(Request*& r1) {
+    //     active_requests.push_back(r1);
+    // }
+
+    void Student::add_request(Request*& r1) {
+        if (!r1) return;
+    
+        // If the DB says this session is fully completed AND already rated,
+        // it belongs in history, not active.
+        if (r1->get_status() == Request::COMPLETED && r1->get_has_rated()) {
+            previous_requests.push_back(r1);
+        } else {
+            active_requests.push_back(r1);
+        }
     }
 
     // void Student::close_request(Request* r1, int rating) {
@@ -85,6 +97,8 @@
     
         std::cout << "[DEBUG] Marking request has_rated=true\n";
         r1->set_has_rated(true);
+
+        r1->update_is_accepted(false); 
     
         // Move in student's lists
         std::cout << "[DEBUG] Moving request to previous_requests\n";
