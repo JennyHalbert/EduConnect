@@ -35,12 +35,21 @@
         }
     }
 
-    int Tutor::avg_completion(){
+    double Tutor::avg_completion(){
+        std ::cout << "avg_completion is called \n"; 
+
         if(total_matched==0){
-            return 0;
+            std ::cout << "into if avg_completion \n"; 
+
+            return 0.0;
         }
         else{
-        return total_completed/total_matched;
+            double value = static_cast<double>(total_completed) /
+                       static_cast<double>(total_matched);
+
+            std ::cout << "into else avg_completion total_completed "<< total_completed<<" and total_matched "<<total_matched<<" total "<<total_completed/total_matched; 
+            return value;
+            //return total_completed/total_matched;
         }
     }
 

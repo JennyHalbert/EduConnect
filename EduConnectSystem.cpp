@@ -237,6 +237,11 @@ std::vector<Tutor*> EduConnectSystem::get_tutors_for_subject(std::string subject
                 }
             }
             if(match){
+                std::cout << "[DEBUG] Tutor " << t->get_email()
+                << " completed=" << t->get_completed()
+                << " matched="   << t->get_matched()
+                << " completion=" << t->avg_completion()
+                << "\n";
                 results.push_back(t);
             }
         }

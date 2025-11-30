@@ -26,7 +26,7 @@ class Tutor: public User{
         void set_days(const std::vector<bool>& days);
 
         double avg_rating();
-        int avg_completion();
+        double avg_completion();
         int get_completed() const;
         int get_matched() const;
         std::vector<bool> get_days();
