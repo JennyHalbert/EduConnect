@@ -52,7 +52,7 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 	wxButton* to_tutor_btn = new wxButton(student_login_panel, wxID_ANY, "Tutor Portal", wxPoint(300, 450), wxSize(200, 35));
 
 	//Text Fields
-	wxStaticText* username_text_student = new wxStaticText(student_login_panel, wxID_ANY, "Username/Email:", wxPoint(270, 250), wxSize(125, -1), wxALIGN_CENTER_HORIZONTAL);
+	wxStaticText* username_text_student = new wxStaticText(student_login_panel, wxID_ANY, "Email:", wxPoint(270, 250), wxSize(125, -1), wxALIGN_CENTER_HORIZONTAL);
 		wxFont f2 = username_text_student->GetFont();
 		f2.Scale(1.25);
 		username_text_student->SetFont(f2);
@@ -87,7 +87,7 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 	wxButton* to_student_button = new wxButton(tutor_login_panel, wxID_ANY, "Student Portal", wxPoint(300, 450), wxSize(200, 35));
 
 	//Text Fields
-	wxStaticText* username_text_tutor = new wxStaticText(tutor_login_panel, wxID_ANY, "Username/Email:", wxPoint(270, 250), wxSize(125, -1), wxALIGN_CENTER_HORIZONTAL);
+	wxStaticText* username_text_tutor = new wxStaticText(tutor_login_panel, wxID_ANY, "Email:", wxPoint(270, 250), wxSize(125, -1), wxALIGN_CENTER_HORIZONTAL);
 	username_text_tutor->SetFont(f2);
 	username_text_tutor->SetBackgroundColour(wxColour(250, 250, 250));
 	wxStaticText* password_text_tutor = new wxStaticText(tutor_login_panel, wxID_ANY, "Password:", wxPoint(270, 300), wxSize(125, -1), wxALIGN_CENTER_HORIZONTAL);
