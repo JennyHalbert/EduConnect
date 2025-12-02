@@ -97,11 +97,10 @@ INSERT INTO subjects (tutor_email, subject) VALUES
 ('sophie@edu.ca', 'Law');   -- Added to cover GUI subject list
 
 
-----------------------------------------------------------------------
 -- TEST DATA: REQUESTS
 -- STATUS: 0=POSTED, 1=MATCHED, 2=COMPLETED, 3=CANCELLED
 -- URGENCY: 0=LOW, 1=MEDIUM, 2=HIGH
-----------------------------------------------------------------------
+
 
 INSERT INTO requests (
     student_email,
