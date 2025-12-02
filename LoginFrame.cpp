@@ -1060,12 +1060,37 @@ void LoginFrame::student_refresh_request_lists() {
     active_req = s->get_active_requests();
     for (Request* r : active_req) {
         if (!r) continue;
+		
+		std::vector<bool> req_days = r->get_days();
+		std::string days = "";
+		int commas = req_days.size()-1;
+		int index = 0;
+
+		for(bool b : req_days){
+			if(b){
+				switch(index){
+				case 0: days.append("Sun"); break;
+				case 1: days.append("Mon"); break;
+				case 2: days.append("Tue"); break;
+				case 3: days.append("Wed"); break;
+				case 4: days.append("Thu"); break;
+				case 5: days.append("Fri"); break;
+				case 6: days.append("Sat"); break;						
+			}
+				if(commas>0){
+					days.append(" ");
+					commas--;
+				}
+			}
+			++index;
+		}
 
         std::string label =
-            "Subject: " + r->get_subject() +
-            " | Status: " +
-            (r->get_status() == Request::MATCHED ? "Matched" : "Posted") +
-            " | ";
+			"Tutor Name: " + (r->get_tutor() == nullptr ? "Not Accepted" : r->get_tutor()->get_name())+
+            " | Subject: " + r->get_subject() +
+			" | Urgency: " + (r->get_urgency()== Request::HIGH ? "High": (r->get_urgency()== Request::MEDIUM ? "Medium": "Low")) +
+            " | Status: " + (r->get_status() == Request::MATCHED ? "Matched" : "Posted") +
+            " | Days: "+days;
 
         if (r->get_status() == Request::MATCHED && r->get_tutor() != nullptr) {
             label += " Tutor: " + r->get_tutor()->get_name();
@@ -1253,7 +1278,7 @@ void LoginFrame::refresh_tutor_ui(){
 				case 6: days.append("Sat"); break;			
 			}
 				if(commas>0){
-					days.append(", ");
+					days.append(" ");
 					commas--;
 				}
 			}
@@ -1291,7 +1316,7 @@ void LoginFrame::refresh_tutor_ui(){
 				case 6: days.append("Sat"); break;						
 			}
 				if(commas>0){
-					days.append(", ");
+					days.append(" ");
 					commas--;
 				}
 			}
@@ -1357,7 +1382,10 @@ void LoginFrame::on_request_double_click(wxCommandEvent& evt){
 	if(req){
 		std::string title = "Request Details: " + req->get_subject();
 		std::string content = "";
-		content+= "Student: " + req->get_student()->get_name();
+		content+= "Student: " + req->get_student()->get_name()+ "\n";
+		content+= "Student Email: " + req->get_student()->get_email()+ "\n";
+		content+= "Tutor: "+ req->get_tutor()->get_name()+ "\n";
+		content+= "Tutor Email: " + req->get_tutor()->get_email()+ "\n";
 		content+="\nUrgency: " + std::string(req->get_urgency() == Request::HIGH ? "High" : 
                                             (req->get_urgency() == Request::MEDIUM ? "Medium" : "Low")) + "\n";
 		content += "-----------------------------------\n";
