@@ -957,7 +957,7 @@ void LoginFrame::on_find_tutors(wxCommandEvent& evt) {
 		std::string label = "Name: " + t->get_name() + " | Rating: " +
 		std::to_string(t->avg_rating()).substr(0,3) + " | Total Completed Sessions: " +
 		std::to_string(t->get_completed()) + " | Completion Rate: " +
-		std::to_string(t->avg_completion()).substr(0,3);
+		std::to_string(t->avg_completion()).substr(0,3) + "%";
 		tutor_results_list->Append(label);
 	}
 	

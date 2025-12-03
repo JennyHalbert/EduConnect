@@ -593,7 +593,11 @@ bool Database::saveAllTutors(const std::unordered_map<std::string, Tutor*>& tuto
 
         sqlite3_bind_double(stmtTut, 5, total_ratings);
         sqlite3_bind_int   (stmtTut, 6, completed);
-        sqlite3_bind_int   (stmtTut, 7, t->get_matched());
+        sqlite3_bind_int   (stmtTut, 7, t->get_matched()/3);
+        std:: cout << "get macthed " << t->get_matched() << "\n";
+        std:: cout << "get macthed / 3 " << t->get_matched()/3 << "\n";
+
+
 
         int rc = sqlite3_step(stmtTut);
         if (rc != SQLITE_DONE) {

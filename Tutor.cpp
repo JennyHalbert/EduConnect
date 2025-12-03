@@ -41,7 +41,7 @@
         }
         else{
             double value = static_cast<double>(total_completed) /
-                       static_cast<double>(total_matched);
+                       static_cast<double>(total_matched)*100.0;
 
             std ::cout << "into else avg_completion total_completed "<< total_completed<<" and total_matched "<<total_matched<<" total "<<total_completed/total_matched; 
             return value;
@@ -91,6 +91,7 @@ std::vector<Request*> Tutor::get_active_requests() {
         total_completed++;
     }
     void Tutor::update_matched(){
+
         total_matched++;
     }
     void Tutor::clean_inbox(){
