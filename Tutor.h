@@ -15,11 +15,9 @@ class Tutor: public User{
         std::vector<Request*> active_requests;
         std::vector<Request*> previous_requests;
         std::priority_queue<Request*,std::vector<Request*>,CompareRequestUrgency> request_inbox;
-        // Create a priority queue of request pointers, define how the priority queue stores data, and define how the priority queue pointers will be compared
 
     public:
         Tutor();
-        // Tutor(std:string email, std::string name, std::string password, std::vector<std::string> subjects = {}); // for registration
         Tutor(std::string email,std::string name,std::string password,const std::vector<bool>& days,std::vector<std::string> subjects);
 
         void set_subjects(const std::vector<std::string>& newSubjects);

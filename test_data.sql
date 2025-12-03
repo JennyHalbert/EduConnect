@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS requests (
     status        INTEGER NOT NULL,
     has_rated     INTEGER NOT NULL DEFAULT 0,  -- 1 = rated, 0 = not rated
     is_accepted   INTEGER NOT NULL,            -- 1 = active, 0 = previous
-    days          TEXT NOT NULL,               -- e.g. "1010100" for Mon, Wed, Fri
+    days          TEXT NOT NULL,               --  eg "1010100" for Mon, Wed, Fri
     FOREIGN KEY(student_email) REFERENCES students(email),
     FOREIGN KEY(tutor_email)   REFERENCES tutors(email)
 );

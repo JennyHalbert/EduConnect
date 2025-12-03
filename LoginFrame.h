@@ -143,9 +143,6 @@ private:
 			wxStaticText* tutor_avg_rating = nullptr;
 			wxStaticText* tutor_matched = nullptr;
 
-
-
-
 	//tutor list variable
 	wxListBox* tutor_requests = nullptr;
 

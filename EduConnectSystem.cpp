@@ -5,32 +5,22 @@
 #include "Student.h"
 #include <vector>
 #include <string>
-// #include "sqlite3.h"
 
-// EduConnectSystem::EduConnectSystem() 
-//     : db_("educonnect.db")
-// {
-//     // load database in
-//     std::cout << "[EduConnectSystem] Loading in DB.\n";
-
-// }
 
 EduConnectSystem::EduConnectSystem()
     : db_("educonnect.db")
 {
     std::cout << "[EduConnectSystem] Loading from DB...\n";
 
-    // 1) Ensure schema exists (students, tutors, subjects, requests)
     if (!db_.initSchema()) {
         std::cerr << "[EduConnectSystem] ERROR: initSchema failed.\n";
-        // You can still run in-memory only, so just return.
         return;
     }
 
-    // 2) Load persistent data into in-memory maps
-    db_.loadAllStudents(Students);                        // fills Students[email]
-    db_.loadAllTutors(Tutors, tutors_by_subject);         // fills Tutors[email] and index
-    db_.loadAllRequests(Students, Tutors); // fills requests and links to users
+    // load data into memory from database
+    db_.loadAllStudents(Students);                        
+    db_.loadAllTutors(Tutors, tutors_by_subject);         
+    db_.loadAllRequests(Students, Tutors); 
     
 
     std::cout << "[EduConnectSystem] DB load complete. "
@@ -41,18 +31,16 @@ EduConnectSystem::EduConnectSystem()
 EduConnectSystem::~EduConnectSystem() {
     std::cout << "[EduConnectSystem] Saving to DB before shutdown...\n";
 
-    // 1) Save all users back to DB
+    //n save back to database
     db_.saveAllStudents(Students);
     db_.saveAllTutors(Tutors);
-    db_.saveAllRequests(Tutors);    // later you can add: db_.saveAllRequests(allRequests);
+    db_.saveAllRequests(Tutors);  // requests are linked to tutors
 
-    // 2) Clean up Tutors
     for (auto& pair : Tutors) {
         delete pair.second;
     }
     Tutors.clear();
 
-    // 3) Clean up Students
     for (auto& pair : Students) {
         delete pair.second;
     }
@@ -63,27 +51,6 @@ EduConnectSystem::~EduConnectSystem() {
     std::cout << "[EduConnectSystem] Destructor finished.\n";
 }
 
-
-// EduConnectSystem::~EduConnectSystem() {
-// // 1. Clean up Tutors
-//     for (auto& pair : Tutors) {
-//         delete pair.second;
-//     }
-//     Tutors.clear();
-
-//     // 2. Clean up Students
-//     for (auto& pair : Students) {
-//         delete pair.second; 
-//     }
-//     Students.clear();
-
-//     tutors_by_subject.clear();
-
-//     // closeDB();
-//     std::cout << "[EduConnectSystem] Destructor finished.\n";
-// }
-
-// // add db stuff in
 void EduConnectSystem::index_tutor(Tutor* t, const std::vector<std::string>& subjects){
     for(const std::string& sub:subjects){
         tutors_by_subject[sub].push_back(t);

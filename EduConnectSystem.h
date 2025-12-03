@@ -15,7 +15,6 @@ public:
     ~EduConnectSystem(); // Destructor closes SQL
     void index_tutor(Tutor* t, const std::vector<std::string>& subjects);//adds tutors to subject vector hashmap
 
-    // --- GUI calls these functions ---    
     // User Management
     void update_tutor_subjects(Tutor* tutor, const std::vector<std::string>& new_subjects);
     bool update_student_details(std::string currentEmail, std::string newName, std::string newEmail, std::string newPassword);
@@ -27,7 +26,7 @@ public:
     //Login
     bool tutor_login(std::string email,std::string password);
     bool student_login(std::string email,std::string password);
-    //Get Info
+
     Tutor* get_tutor(std::string email);
     Student* get_student(std::string email);
 
@@ -39,30 +38,12 @@ public:
 
     bool accept_request(Tutor* t, Request* r);
 
-    // Requests
-
 private:
-    // --- Data Structures ---
+
     std::unordered_map<std::string, Tutor*> Tutors; 
     std::unordered_map<std::string, Student*> Students; 
     std::unordered_map<std::string, std::vector<Tutor*>> tutors_by_subject;
-    
-    // --- Database ---
+
     Database db_{"educonnect.db"};
     
-    // Student* loadStudentFromDB(const std::string& email);
-    // Tutor*   loadTutorFromDB(const std::string& email);
-
-    // bool openDB(const std::string& filename);
-    // void closeDB();
-    // bool initSchema();
-    // bool executeSQL(const char* sql);
-
-
-
-    // // --- Database ---
-    //sqlite3* db;    
-    // //Helper to run internal SQL commands
-    // void executeSQL(const char* sql);
-    // void loadUsersFromDB();
 };

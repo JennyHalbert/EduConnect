@@ -4,10 +4,6 @@
 #include "Request.h"
 #include <iostream>
 
-// Tutor::Tutor(std::string email, std::string name, std::string password, std::vector<std::string> subjects)
-// : User(email, name, password), subjects(subjects){ // can use std::move in this line to increase efficiency
-
-// }
     Tutor::Tutor() = default;
 
     Tutor::Tutor(std::string email,std::string name,std::string password,const std::vector<bool>& days, std::vector<std::string> subjects)
@@ -57,27 +53,6 @@
         return subjects;
     }
 
-// std::vector<Request*> Tutor::get_active_requests(){
-//         std::vector<Request*> temp_list;
-//         Request* temp;
-//         for(int i = 0; i<active_requests.size();i++){
-//             temp = active_requests[i];
-//             if(temp->get_status()== Request::COMPLETED){
-//                 active_requests.pop_back();
-//                 previous_requests.push_back(temp);
-//             }
-//             else{
-//                 active_requests.pop_back();
-//                 temp_list.push_back(temp);
-//             }
-//         }
-//         for(Request* r: temp_list){
-//             active_requests.push_back(r);
-//         }
-//         return active_requests;
-
-// }
-
 void Tutor::set_totals(double totalRatings, int completed, int matched) {
     total_ratings  = totalRatings;
     total_completed = completed;
@@ -85,7 +60,7 @@ void Tutor::set_totals(double totalRatings, int completed, int matched) {
 }
 
 std::vector<Request*> Tutor::get_active_requests() {
-    // Move COMPLETED requests from active_requests -> previous_requests
+    //  COMPLETED requests move from active_requests to previous_requests
     auto it = active_requests.begin();
     while (it != active_requests.end()) {
         Request* r = *it;
@@ -96,8 +71,6 @@ std::vector<Request*> Tutor::get_active_requests() {
             ++it;
         }
     }
-
-    // Return the remaining active requests (copy)
     return active_requests;
 }
 
@@ -136,7 +109,7 @@ std::vector<Request*> Tutor::get_active_requests() {
         std::vector<Request*> display_list;
         std::vector<Request*> temp_storage;
 
-        while(!request_inbox.empty()){  //Empty the priority queue inbox
+        while(!request_inbox.empty()){  
             Request* req = request_inbox.top();
             request_inbox.pop();
 
