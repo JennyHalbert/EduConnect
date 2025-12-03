@@ -742,6 +742,9 @@ void LoginFrame::create_student(wxCommandEvent& evt) {
 	else if (new_student_email->IsEmpty()) {
 		wxMessageBox("Please Enter an Email ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
 	}
+	else if (is_valid_email(new_student_email->GetValue().ToStdString())==false) {
+		wxMessageBox("Please Enter a Valid Email ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
+	}
 	else if (new_student_password->IsEmpty()) {
 		wxMessageBox("Please Enter a Password ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
     }
@@ -768,6 +771,9 @@ void LoginFrame::create_tutor(wxCommandEvent& evt) {
 	}
 	else if (new_tutor_email->IsEmpty()) {
 		wxMessageBox("Please Enter an Email ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
+	}
+	else if (is_valid_email(new_tutor_email->GetValue().ToStdString())==false) {
+		wxMessageBox("Please Enter a Valid Email ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
 	}
 	else if (new_tutor_password->IsEmpty()) {
 		wxMessageBox("Please Enter a Password ", "Failed Account Creation", wxOK | wxICON_INFORMATION);
@@ -1303,8 +1309,26 @@ void LoginFrame::on_request_double_click(wxCommandEvent& evt){
                                             (req->get_urgency() == Request::MEDIUM ? "Medium" : "Low")) + "\n";
 		content += "-----------------------------------\n";
         content += "Description:\n";
-        content += req->get_description(); // Assuming you added this getter!
+        content += req->get_description(); 
         // Display the message box
         wxMessageBox(content, title, wxOK | wxICON_INFORMATION);
 	}
+}
+
+
+
+
+bool LoginFrame::is_valid_email(const std::string& email) {
+    size_t at_pos = email.find('@');
+
+    if (at_pos == std::string::npos)
+        return false;
+
+    if (email.rfind(".ca") != std::string::npos)
+    return true;
+
+    if (email.rfind(".com") != std::string::npos)
+        return true;
+
+    return false;
 }

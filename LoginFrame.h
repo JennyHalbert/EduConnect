@@ -29,6 +29,8 @@ private:
 
 	bool authenticate_student(std::string user, std::string pass);
 	bool authenticate_tutor(std::string user, std::string pass);
+	bool is_valid_email(const std::string& email);
+
 
 
 	void to_tutor(wxCommandEvent& evt);
@@ -145,6 +147,7 @@ private:
 
 	//tutor list variable
 	wxListBox* tutor_requests = nullptr;
+
 
 
 };
