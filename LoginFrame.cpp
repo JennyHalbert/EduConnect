@@ -886,8 +886,8 @@ void LoginFrame::populate_tutor_account_details(Tutor* t){
 	tutor_update_name->SetValue(t->get_name());
 	tutor_update_email->SetValue(t->get_email());
     tutor_update_password->SetValue(t->get_password());
-	tutor_completion_rate->SetLabel(std::to_string(t->avg_completion()));
-	tutor_completions->SetLabel(std::to_string(t->get_completed()));
+	tutor_completion_rate->SetLabel(wxString::Format("%.2f",t->avg_completion())+"%");
+	//tutor_completion_rate->SetLabel(std::to_string(t->avg_completion()));	tutor_completions->SetLabel(std::to_string(t->get_completed()));
 	tutor_avg_rating->SetLabel(wxString::Format("%.2f", t->avg_rating()));
 	tutor_matched->SetLabel(std::to_string(t->get_matched()));
 
