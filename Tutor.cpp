@@ -47,9 +47,28 @@
     std::vector<std::string> Tutor::get_subjects(){
         return subjects;
     }
-    const std::vector<Request*>& Tutor::get_active_requests(){
+
+std::vector<Request*> Tutor::get_active_requests(){
+        std::vector<Request*> temp_list;
+        Request* temp;
+        for(int i = 0; i<active_requests.size();i++){
+            temp = active_requests[i];
+            if(temp->get_status()== Request::COMPLETED){
+                active_requests.pop_back();
+                previous_requests.push_back(temp);
+            }
+            else{
+                active_requests.pop_back();
+                temp_list.push_back(temp);
+            }
+        }
+        for(Request* r: temp_list){
+            active_requests.push_back(r);
+        }
         return active_requests;
-    }
+
+}
+
     int Tutor::get_completed() const{
         return total_completed;
     }
@@ -99,6 +118,10 @@
         }
         return display_list;
     }
+    std::vector<Request*> Tutor::get_previous_requests(){
+        return previous_requests;
+    }
+
 
     bool Tutor::is_available(int dayIndex) const{
         if (dayIndex >= 0 && dayIndex < 7) {
@@ -143,5 +166,12 @@
         active_requests.push_back(r);
         total_matched++;
         return true;
+    }
+    void Tutor::close_request(Request*r){
+        if(r->get_status()!= Request::MATCHED){
+            return;
+        }
+        r->update_status(Request::COMPLETED);
+        previous_requests.push_back(r);
     }
 

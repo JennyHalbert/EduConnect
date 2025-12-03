@@ -1018,23 +1018,37 @@ void LoginFrame::student_refresh_request_lists(){
 	Student* s = connection_system->get_student(email);
 
 	if(!s) return;
-
 	std::vector<Request*> unrated_requests;
-	const std::vector<Request*>& active_req = s->get_active_requests();
+	std::vector<Request*> active_req = s->get_active_requests();
 
+	//check for unrated requests
+	for(Request* r: active_req){
+		if (r->get_status() == Request::COMPLETED) {
+            unrated_requests.push_back(r);
+	}
+	//Rate unrated requests
+	if(!unrated_requests.empty()){
+		wxMessageBox("You have " + std::to_string(unrated_requests.size()) + 
+                     " completed session(s) to rate.", "Feedback Required");
+		for(Request* req: unrated_requests){
+			std::string tutor_name = req->get_tutor()->get_name();
+			RatingDialog dlg(this, tutor_name);
+			if(dlg.ShowModal() == wxID_OK){
+				int rating = dlg.GetRating();
+				s->close_request(req,rating);
+			}
+		}
+	}
+	//Get updated list of active requests
+	active_req = s->get_active_requests();
 	for(Request* r: active_req){
 		std::string label = "Subject: " + r->get_subject()+" | Status: "+ (r->get_status() == Request::MATCHED ? "Matched" : "Posted") + " | ";
 
 		if(r->get_status()==Request::MATCHED && r->get_tutor() != nullptr){
 			label += " Tutor: " + r->get_tutor()->get_name();
 		}
-
 		student_active_requests_list->Append(label);
 		student_displayed_active_requests.push_back(r);
-
-		if(r->get_status()==Request::COMPLETED){
-			unrated_requests.push_back(r);
-		}
 	}
 
 	//get historical requests
@@ -1049,22 +1063,9 @@ void LoginFrame::student_refresh_request_lists(){
 		student_history_requests_list->Append(label);
 	}
 	
-	if(!unrated_requests.empty()){
-		wxMessageBox("You have " + std::to_string(unrated_requests.size()) + 
-                     " completed session(s) to rate.", "Feedback Required");
-
-		for(Request* req: unrated_requests){
-			std::string tutor_name = req->get_tutor()->get_name();
-			RatingDialog dlg(this, tutor_name);
-			if(dlg.ShowModal() == wxID_OK){
-				int rating = dlg.GetRating();
-
-				req->get_tutor()->update_ratings(rating);
-			}
-		}
 	}
-
 }
+
 void LoginFrame::student_on_mark_complete(wxCommandEvent& evt){
 		int sel = student_active_requests_list->GetSelection();
 		if(sel == wxNOT_FOUND){
@@ -1073,7 +1074,7 @@ void LoginFrame::student_on_mark_complete(wxCommandEvent& evt){
 		}
 
 		Request* req = student_displayed_active_requests[sel];
-		
+
 		if(req->get_status() != Request::MATCHED){
 			wxMessageBox("You can only complete requests that have been accepted by a tutor.", "Error");
         	return;			
@@ -1084,7 +1085,7 @@ void LoginFrame::student_on_mark_complete(wxCommandEvent& evt){
 		if(dlg.ShowModal()== wxID_OK){
 			int rating = dlg.GetRating();
 			std::string email = student_username->GetValue().ToStdString();
-			Student* s =connection_system->get_student(email);
+			Student* s = connection_system->get_student(email);
 			s->close_request(req,rating);
 
 			wxMessageBox("Session completed and rating submitted!");
@@ -1207,6 +1208,7 @@ void LoginFrame::on_tutor_close_request(wxCommandEvent& evt){
 	
 	Request* req = displayed_tutor_active[selection];
 	req-> update_status(Request::COMPLETED);
+	req-> get_tutor()->close_request(req);
 	//---------------------------------------------------------------------------------------------------------------------add history vector logic
 	wxMessageBox("Session Marked as Complete.");
     refresh_tutor_ui();
