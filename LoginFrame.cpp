@@ -46,8 +46,8 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 		student_menu->SetBackgroundColour(wxColour(250, 250, 250));
 
 	//Buttons
-	wxButton* enter_btn_student = new wxButton(student_login_panel, wxID_ANY, "Submit", wxPoint(300, 350), wxSize(100, 35));
-	wxButton* forgor_btn_student = new wxButton(student_login_panel, wxID_ANY, "Forgot Password?", wxPoint(400, 350), wxSize(100, 35));
+	wxButton* enter_btn_student = new wxButton(student_login_panel, wxID_ANY, "Submit", wxPoint(280, 350), wxSize(120, 35));
+	wxButton* forgor_btn_student = new wxButton(student_login_panel, wxID_ANY, "Forgot Password?", wxPoint(400, 350), wxSize(120, 35));
 	wxButton* to_student_register_btn1 = new wxButton(student_login_panel, wxID_ANY, "Register as Student", wxPoint(300, 400), wxSize(200, 35));
 	wxButton* to_tutor_btn = new wxButton(student_login_panel, wxID_ANY, "Tutor Portal", wxPoint(300, 450), wxSize(200, 35));
 
@@ -81,8 +81,8 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 	tutor_menu->SetBackgroundColour(wxColour(250, 250, 250));
 
 	//Buttons
-	wxButton* enter_btn_tutor = new wxButton(tutor_login_panel, wxID_ANY, "Submit", wxPoint(300, 350), wxSize(100, 35));
-	wxButton* forgor_btn_tutor = new wxButton(tutor_login_panel, wxID_ANY, "Forgot Password?", wxPoint(400, 350), wxSize(100, 35));
+	wxButton* enter_btn_tutor = new wxButton(tutor_login_panel, wxID_ANY, "Submit", wxPoint(280, 350), wxSize(120, 35));
+	wxButton* forgor_btn_tutor = new wxButton(tutor_login_panel, wxID_ANY, "Forgot Password?", wxPoint(400, 350), wxSize(120, 35));
 	wxButton* to_tutor_register_btn1 = new wxButton(tutor_login_panel, wxID_ANY, "Register as Tutor", wxPoint(300, 400), wxSize(200, 35));
 	wxButton* to_student_button = new wxButton(tutor_login_panel, wxID_ANY, "Student Portal", wxPoint(300, 450), wxSize(200, 35));
 
@@ -248,7 +248,7 @@ LoginFrame::LoginFrame(const wxString& title,EduConnectSystem* c_system): wxFram
 
 		//add check boxes
 		wxPanel* checkbox_panel = new wxPanel(criteria_input_panel,wxID_ANY,wxPoint(325,250), wxSize(450, 120));
-		wxGridSizer* days_sizer = new wxGridSizer(2,4,15,35);
+		wxGridSizer* days_sizer = new wxGridSizer(2,4,15,15);
 		day_checkboxes.clear();
 		for(size_t i = 0; i<days_to_choose.GetCount(); i++){
 			wxCheckBox* cb = new wxCheckBox(checkbox_panel, wxID_ANY,days_to_choose[i] );
